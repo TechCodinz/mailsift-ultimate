@@ -322,15 +322,32 @@ class UltraIntelligenceEngine:
             # Basic validation
             validate_email(email, check_deliverability=False)
 
+            # Additional checks
+            if '@' not in email or '.' not in email:
+                return False
+            
+            parts = email.split("@")
+            if len(parts) != 2:
+                return False
+                
+            local, domain = parts
+            
+            # Check local part
+            if len(local) < 1 or len(local) > 64:
+                return False
+                
+            # Check domain
+            if len(domain) < 3 or '.' not in domain:
+                return False
+                
             # DNS check (if possible)
-            domain = email.split("@")[1]
             try:
                 dns.resolver.resolve(domain, "MX")
                 return True
             except Exception:
-                pass
-
-            return True
+                # If DNS check fails, still return True for basic format
+                return True
+                
         except Exception:
             return False
 
@@ -1111,4 +1128,9 @@ if __name__ == "__main__":
     print("📊 API Docs: http://localhost:5000/api/docs")
     print("=" * 80 + "\n")
 
-    app.run(debug=False, port=5000, host="0.0.0.0", threaded=True)
+    # Production configuration
+    port = int(os.environ.get('PORT', 5000))
+    host = os.environ.get('HOST', '0.0.0.0')
+    debug = os.environ.get('DEBUG', 'False').lower() == 'true'
+    
+    app.run(debug=debug, port=port, host=host, threaded=True)
