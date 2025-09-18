@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }" :class="{ 'dark': darkMode }">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -107,6 +107,35 @@
         function showPricing() {
             window.location.href = '/pricing';
         }
+        
+        // Dark Mode Functions
+        function toggleDarkMode() {
+            const darkMode = localStorage.getItem('darkMode') === 'true';
+            const newDarkMode = !darkMode;
+            localStorage.setItem('darkMode', newDarkMode);
+            
+            if (newDarkMode) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('darkModeIcon').className = 'fas fa-sun text-yellow-400 neon-text text-lg';
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('darkModeIcon').className = 'fas fa-moon text-purple-400 neon-text text-lg';
+            }
+        }
+        
+        // Initialize dark mode on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const darkMode = localStorage.getItem('darkMode') === 'true';
+            const icon = document.getElementById('darkModeIcon');
+            
+            if (darkMode) {
+                document.documentElement.classList.add('dark');
+                if (icon) icon.className = 'fas fa-sun text-yellow-400 neon-text text-lg';
+            } else {
+                document.documentElement.classList.remove('dark');
+                if (icon) icon.className = 'fas fa-moon text-purple-400 neon-text text-lg';
+            }
+        });
     </script>
 </head>
 <body class="gradient-animate matrix-bg cyber-grid min-h-screen transition-all duration-500" x-data="mailsiftApp()">
@@ -143,9 +172,9 @@
                     </div>
                     
                     <!-- Dark Mode Toggle -->
-                    <button @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode)" 
+                    <button onclick="toggleDarkMode()" 
                             class="glass-effect p-3 rounded-lg hover:bg-purple-500/20 transition border border-purple-500/30">
-                        <i class="fas text-lg" :class="darkMode ? 'fa-sun text-yellow-400 neon-text' : 'fa-moon text-purple-400 neon-text'"></i>
+                        <i class="fas fa-moon text-purple-400 neon-text text-lg" id="darkModeIcon"></i>
                     </button>
                     
                     <!-- Credits Display -->
