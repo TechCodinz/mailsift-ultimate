@@ -718,7 +718,7 @@ def download() -> str:
         'subscription': 'free',
         'email': None
     }
-    return render_template("download.html", user=user)
+    return render_template("download_ultra.html", user=user)
 
 
 @app.route("/pricing")
@@ -729,7 +729,7 @@ def pricing() -> str:
         'subscription': 'free',
         'email': None
     }
-    return render_template("pricing.html", user=user)
+    return render_template("pricing_ultra.html", user=user)
 
 
 @app.route("/api/v5/extract", methods=["POST"])

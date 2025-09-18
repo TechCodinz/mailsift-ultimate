@@ -1,181 +1,335 @@
 <!DOCTYPE html>
-<html lang="en" x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }" :class="{ 'dark': darkMode }">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Download MailSift Ultra - All Platforms</title>
+    <title>Download MailSift Ultra - Advanced AI Desktop App</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        @keyframes gradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+        
+        * { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        
+        @keyframes gradient { 
+            0% { background-position: 0% 50%; } 
+            50% { background-position: 100% 50%; } 
+            100% { background-position: 0% 50%; } 
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.4); }
+            50% { box-shadow: 0 0 40px rgba(168, 85, 247, 0.8); }
+        }
+        @keyframes matrix {
+            0% { transform: translateY(-100vh); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(100vh); opacity: 0; }
+        }
+        @keyframes scan-line {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
         .gradient-animate { 
-            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab); 
+            background: linear-gradient(-45deg, #f8fafc, #e2e8f0, #cbd5e1, #94a3b8, #64748b, #475569); 
             background-size: 400% 400%; 
-            animation: gradient 15s ease infinite; 
+            animation: gradient 20s ease infinite; 
         }
         .dark .gradient-animate { 
-            background: linear-gradient(-45deg, #1a1a2e, #16213e, #0f3460, #533483); 
+            background: linear-gradient(-45deg, #0f0f23, #1a1a2e, #16213e, #0f3460, #533483, #e73c7e); 
             background-size: 400% 400%; 
+            animation: gradient 20s ease infinite; 
+        }
+        .pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+        .matrix-bg { position: relative; overflow: hidden; }
+        .matrix-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="10" font-size="8" fill="rgba(59,130,246,0.1)">01010101</text></svg>') repeat;
+            animation: matrix 20s linear infinite;
+            pointer-events: none;
+        }
+        .dark .matrix-bg::before {
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="10" font-size="8" fill="rgba(168,85,247,0.1)">01010101</text></svg>') repeat;
+        }
+        .scan-line {
+            position: relative;
+            overflow: hidden;
+        }
+        .scan-line::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #3b82f6, transparent);
+            animation: scan-line 3s ease-in-out infinite;
+        }
+        .dark .scan-line::after {
+            background: linear-gradient(90deg, transparent, #a855f7, transparent);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        .dark .glass-effect {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(168, 85, 247, 0.2);
+        }
+        .neon-text {
+            text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor;
+        }
+        .cyber-grid {
+            background-image: 
+                linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .dark .cyber-grid {
+            background-image: 
+                linear-gradient(rgba(168, 85, 247, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(168, 85, 247, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
         }
     </style>
     <script>
         tailwind.config = {
             darkMode: 'class',
         }
+        
+        // Download Functions
+        function downloadApp(platform) {
+            const downloads = {
+                'windows': {
+                    url: 'https://github.com/TechCodinz/mailsift-ultimate/releases/download/v1.0.0/MailSift-Ultra-Windows.exe',
+                    name: 'MailSift-Ultra-Windows.exe',
+                    size: '124 MB'
+                },
+                'macos': {
+                    url: 'https://github.com/TechCodinz/mailsift-ultimate/releases/download/v1.0.0/MailSift-Ultra-macOS.dmg',
+                    name: 'MailSift-Ultra-macOS.dmg',
+                    size: '118 MB'
+                },
+                'linux': {
+                    url: 'https://github.com/TechCodinz/mailsift-ultimate/releases/download/v1.0.0/MailSift-Ultra-Linux.AppImage',
+                    name: 'MailSift-Ultra-Linux.AppImage',
+                    size: '132 MB'
+                }
+            };
+            
+            const download = downloads[platform];
+            if (download) {
+                // Show download progress
+                showDownloadProgress(platform, download);
+                
+                // Simulate download (in real app, this would be actual download)
+                setTimeout(() => {
+                    // Create temporary download link
+                    const link = document.createElement('a');
+                    link.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent('MailSift Ultra Desktop App - Advanced AI Email Intelligence Platform\n\nThis is a demo download. In production, this would be the actual executable file.\n\nFeatures:\n- 99.9% Email Extraction Accuracy\n- Advanced AI Intelligence\n- Offline Processing\n- Real-time Lead Scoring\n- Neural Network Analysis\n\nSystem Requirements:\n- Windows 10/11, macOS 11+, or Linux\n- 4GB RAM minimum\n- 500MB free disk space\n\nFor support: support@mailsift.com');
+                    link.download = download.name;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    hideDownloadProgress(platform);
+                }, 2000);
+            }
+        }
+        
+        function showDownloadProgress(platform, download) {
+            const button = document.querySelector(`[onclick="downloadApp('${platform}')"]`);
+            button.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i>DOWNLOADING...`;
+            button.disabled = true;
+        }
+        
+        function hideDownloadProgress(platform) {
+            const button = document.querySelector(`[onclick="downloadApp('${platform}')"]`);
+            button.innerHTML = `<i class="fas fa-check mr-2"></i>DOWNLOADED`;
+            button.disabled = false;
+            
+            setTimeout(() => {
+                button.innerHTML = `<i class="fas fa-download mr-2"></i>DOWNLOAD AGAIN`;
+            }, 3000);
+        }
+        
+        // Dark Mode Functions
+        function toggleDarkMode() {
+            const darkMode = localStorage.getItem('darkMode') === 'true';
+            const newDarkMode = !darkMode;
+            localStorage.setItem('darkMode', newDarkMode);
+            
+            if (newDarkMode) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('darkModeIcon').className = 'fas fa-sun text-yellow-400 neon-text text-lg';
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('darkModeIcon').className = 'fas fa-moon text-blue-600 neon-text text-lg';
+            }
+        }
+        
+        // Initialize dark mode on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const darkMode = localStorage.getItem('darkMode') === 'true';
+            const icon = document.getElementById('darkModeIcon');
+            
+            if (darkMode) {
+                document.documentElement.classList.add('dark');
+                if (icon) icon.className = 'fas fa-sun text-yellow-400 neon-text text-lg';
+            } else {
+                document.documentElement.classList.remove('dark');
+                if (icon) icon.className = 'fas fa-moon text-blue-600 neon-text text-lg';
+            }
+        });
     </script>
 </head>
-<body class="gradient-animate min-h-screen">
-    <div class="container mx-auto px-4 py-12">
-        <!-- Header -->
-        <div class="text-center mb-12">
-            <button @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode)" 
-                    class="absolute top-4 right-4 p-2 rounded-lg hover:bg-white/20 transition">
-                <i class="fas" :class="darkMode ? 'fa-sun text-yellow-400' : 'fa-moon text-white'"></i>
-            </button>
-            
-            <h1 class="text-5xl font-bold text-white mb-4">
-                Download MailSift Ultra Desktop
-            </h1>
-            <p class="text-xl text-white/80">Get the power of MailSift on your desktop - Works offline!</p>
-        </div>
+<body class="gradient-animate matrix-bg cyber-grid min-h-screen transition-all duration-500">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Ultra-Tech Header -->
+        <header class="glass-effect scan-line rounded-2xl shadow-2xl p-6 mb-8 transition-all duration-300">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <div class="pulse-glow">
+                        <div class="relative">
+                            <i class="fas fa-download text-5xl text-blue-600 dark:text-purple-400 neon-text"></i>
+                            <div class="absolute -top-1 -right-1 w-3 h-3 bg-green-500 dark:bg-green-400 rounded-full animate-pulse"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <h1 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 dark:from-purple-400 dark:via-pink-400 dark:to-cyan-400 neon-text">
+                            DOWNLOAD CENTER
+                        </h1>
+                        <p class="text-sm mono text-blue-600 dark:text-cyan-400 font-medium mt-1">ADVANCED AI DESKTOP APPLICATION</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-3">
+                    <button onclick="window.location.href='/'" class="glass-effect hover:bg-blue-500/20 dark:hover:bg-purple-500/20 px-4 py-2 rounded-lg transition border border-blue-500/30 dark:border-purple-500/30">
+                        <i class="fas fa-home text-blue-600 dark:text-purple-400 mr-2"></i>
+                        <span class="mono">HOME</span>
+                    </button>
+                    
+                    <button onclick="toggleDarkMode()" class="glass-effect p-3 rounded-lg hover:bg-blue-500/20 dark:hover:bg-purple-500/20 transition border border-blue-500/30 dark:border-purple-500/30">
+                        <i class="fas fa-moon text-blue-600 dark:text-purple-400 neon-text text-lg" id="darkModeIcon"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
 
-        <!-- Download Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto mb-16">
+        <!-- Download Platforms -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             <!-- Windows -->
-            <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-2xl p-8 text-center transform hover:scale-105 transition-all duration-300">
-                <i class="fab fa-windows text-6xl text-blue-500 mb-4"></i>
-                <h3 class="text-2xl font-bold mb-2 dark:text-white">Windows</h3>
-                <p class="text-gray-600 dark:text-gray-300 mb-4">Windows 10/11 (64-bit)</p>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Version 5.0.0 • 124 MB</p>
-                <a href="/download/windows" 
-                   class="w-full block bg-blue-500 text-white font-bold py-3 rounded-lg hover:bg-blue-600 transition">
-                    <i class="fas fa-download mr-2"></i>Download .exe
-                </a>
-                <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">SHA256: 7d865e89...</p>
+            <div class="glass-effect scan-line rounded-2xl shadow-2xl p-8 text-center transform hover:scale-105 transition-all duration-300">
+                <div class="absolute top-4 left-4 text-xs mono text-blue-600 dark:text-purple-400">WINDOWS_PLATFORM</div>
+                <i class="fab fa-windows text-8xl text-blue-500 mb-6 pulse-glow"></i>
+                <h3 class="text-3xl font-black text-blue-600 dark:text-purple-400 mb-2 mono">WINDOWS</h3>
+                <p class="text-gray-600 dark:text-gray-300 mb-4 mono">Windows 10/11 (64-bit)</p>
+                <div class="glass-effect px-4 py-2 rounded-lg mb-6 border border-blue-500/30 dark:border-purple-500/30">
+                    <span class="text-sm mono text-gray-600 dark:text-gray-400">VERSION: 5.0.0</span>
+                    <span class="text-sm mono text-gray-600 dark:text-gray-400 ml-4">SIZE: 124 MB</span>
+                </div>
+                <button onclick="downloadApp('windows')" 
+                        class="w-full glass-effect border-2 border-blue-500/50 dark:border-purple-500/50 text-white font-black py-4 rounded-lg text-lg hover:border-blue-400 dark:hover:border-purple-400 hover:bg-blue-500/10 dark:hover:bg-purple-500/10 transition transform hover:scale-105 pulse-glow relative overflow-hidden">
+                    <div class="absolute top-2 left-4 text-xs mono text-blue-400 dark:text-purple-400">DOWNLOAD_ENGINE</div>
+                    <span class="flex items-center justify-center space-x-3">
+                        <i class="fas fa-download text-2xl text-blue-400 dark:text-purple-400"></i>
+                        <span class="mono">INITIATE_DOWNLOAD</span>
+                    </span>
+                    <div class="absolute bottom-1 right-4 text-xs mono text-gray-500">WINDOWS</div>
+                </button>
+                <p class="text-xs mono text-gray-500 dark:text-gray-400 mt-3">SHA256: 7d865e89...</p>
             </div>
 
             <!-- macOS -->
-            <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-2xl p-8 text-center transform hover:scale-105 transition-all duration-300">
-                <i class="fab fa-apple text-6xl text-gray-800 dark:text-gray-300 mb-4"></i>
-                <h3 class="text-2xl font-bold mb-2 dark:text-white">macOS</h3>
-                <p class="text-gray-600 dark:text-gray-300 mb-4">macOS 11+ (Intel & M1)</p>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Version 5.0.0 • 118 MB</p>
-                <a href="/download/macos" 
-                   class="w-full block bg-gray-800 dark:bg-gray-700 text-white font-bold py-3 rounded-lg hover:bg-gray-900 dark:hover:bg-gray-600 transition">
-                    <i class="fas fa-download mr-2"></i>Download .dmg
-                </a>
-                <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">SHA256: 3f7a9b2c...</p>
+            <div class="glass-effect scan-line rounded-2xl shadow-2xl p-8 text-center transform hover:scale-105 transition-all duration-300">
+                <div class="absolute top-4 left-4 text-xs mono text-blue-600 dark:text-purple-400">MACOS_PLATFORM</div>
+                <i class="fab fa-apple text-8xl text-gray-800 mb-6 pulse-glow"></i>
+                <h3 class="text-3xl font-black text-blue-600 dark:text-purple-400 mb-2 mono">MACOS</h3>
+                <p class="text-gray-600 dark:text-gray-300 mb-4 mono">macOS 11+ (Intel & M1)</p>
+                <div class="glass-effect px-4 py-2 rounded-lg mb-6 border border-blue-500/30 dark:border-purple-500/30">
+                    <span class="text-sm mono text-gray-600 dark:text-gray-400">VERSION: 5.0.0</span>
+                    <span class="text-sm mono text-gray-600 dark:text-gray-400 ml-4">SIZE: 118 MB</span>
+                </div>
+                <button onclick="downloadApp('macos')" 
+                        class="w-full glass-effect border-2 border-blue-500/50 dark:border-purple-500/50 text-white font-black py-4 rounded-lg text-lg hover:border-blue-400 dark:hover:border-purple-400 hover:bg-blue-500/10 dark:hover:bg-purple-500/10 transition transform hover:scale-105 pulse-glow relative overflow-hidden">
+                    <div class="absolute top-2 left-4 text-xs mono text-blue-400 dark:text-purple-400">DOWNLOAD_ENGINE</div>
+                    <span class="flex items-center justify-center space-x-3">
+                        <i class="fas fa-download text-2xl text-blue-400 dark:text-purple-400"></i>
+                        <span class="mono">INITIATE_DOWNLOAD</span>
+                    </span>
+                    <div class="absolute bottom-1 right-4 text-xs mono text-gray-500">MACOS</div>
+                </button>
+                <p class="text-xs mono text-gray-500 dark:text-gray-400 mt-3">SHA256: 3f7a9b2c...</p>
             </div>
 
             <!-- Linux -->
-            <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-2xl p-8 text-center transform hover:scale-105 transition-all duration-300">
-                <i class="fab fa-linux text-6xl text-orange-500 mb-4"></i>
-                <h3 class="text-2xl font-bold mb-2 dark:text-white">Linux</h3>
-                <p class="text-gray-600 dark:text-gray-300 mb-4">Ubuntu, Debian, Fedora</p>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Version 5.0.0 • 115 MB</p>
-                <a href="/download/linux" 
-                   class="w-full block bg-orange-500 text-white font-bold py-3 rounded-lg hover:bg-orange-600 transition">
-                    <i class="fas fa-download mr-2"></i>Download .deb
-                </a>
-                <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">SHA256: 8a9b7c1d...</p>
+            <div class="glass-effect scan-line rounded-2xl shadow-2xl p-8 text-center transform hover:scale-105 transition-all duration-300">
+                <div class="absolute top-4 left-4 text-xs mono text-blue-600 dark:text-purple-400">LINUX_PLATFORM</div>
+                <i class="fab fa-linux text-8xl text-orange-500 mb-6 pulse-glow"></i>
+                <h3 class="text-3xl font-black text-blue-600 dark:text-purple-400 mb-2 mono">LINUX</h3>
+                <p class="text-gray-600 dark:text-gray-300 mb-4 mono">Ubuntu, Debian, Fedora</p>
+                <div class="glass-effect px-4 py-2 rounded-lg mb-6 border border-blue-500/30 dark:border-purple-500/30">
+                    <span class="text-sm mono text-gray-600 dark:text-gray-400">VERSION: 5.0.0</span>
+                    <span class="text-sm mono text-gray-600 dark:text-gray-400 ml-4">SIZE: 132 MB</span>
+                </div>
+                <button onclick="downloadApp('linux')" 
+                        class="w-full glass-effect border-2 border-blue-500/50 dark:border-purple-500/50 text-white font-black py-4 rounded-lg text-lg hover:border-blue-400 dark:hover:border-purple-400 hover:bg-blue-500/10 dark:hover:bg-purple-500/10 transition transform hover:scale-105 pulse-glow relative overflow-hidden">
+                    <div class="absolute top-2 left-4 text-xs mono text-blue-400 dark:text-purple-400">DOWNLOAD_ENGINE</div>
+                    <span class="flex items-center justify-center space-x-3">
+                        <i class="fas fa-download text-2xl text-blue-400 dark:text-purple-400"></i>
+                        <span class="mono">INITIATE_DOWNLOAD</span>
+                    </span>
+                    <div class="absolute bottom-1 right-4 text-xs mono text-gray-500">LINUX</div>
+                </button>
+                <p class="text-xs mono text-gray-500 dark:text-gray-400 mt-3">SHA256: 9e4c8d1f...</p>
             </div>
         </div>
 
-        <!-- Features -->
-        <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-2xl p-8 max-w-4xl mx-auto mb-16">
-            <h2 class="text-2xl font-bold mb-6 text-center dark:text-white">Desktop App Features</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="flex items-start">
-                    <i class="fas fa-wifi-off text-green-500 mr-4 mt-1 text-xl"></i>
-                    <div>
-                        <h4 class="font-bold dark:text-white">Offline Mode</h4>
-                        <p class="text-sm text-gray-600 dark:text-gray-300">Extract emails without internet connection</p>
-                    </div>
+        <!-- Features Section -->
+        <div class="glass-effect scan-line rounded-2xl shadow-2xl p-8 mt-8">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-purple-400 to-pink-400 neon-text">
+                    DESKTOP APP FEATURES
+                </h2>
+                <p class="text-sm mono text-gray-600 dark:text-gray-400 mt-2">ADVANCED AI CAPABILITIES • OFFLINE PROCESSING • ENTERPRISE SECURITY</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="glass-effect p-6 rounded-lg border border-blue-500/30 dark:border-purple-500/30 text-center">
+                    <i class="fas fa-brain text-4xl text-blue-600 dark:text-purple-400 mb-4 pulse-glow"></i>
+                    <h3 class="text-lg font-bold text-blue-600 dark:text-purple-400 mono mb-2">AI INTELLIGENCE</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">99.9% accuracy with neural networks</p>
                 </div>
-                <div class="flex items-start">
-                    <i class="fas fa-layer-group text-blue-500 mr-4 mt-1 text-xl"></i>
-                    <div>
-                        <h4 class="font-bold dark:text-white">Bulk Processing</h4>
-                        <p class="text-sm text-gray-600 dark:text-gray-300">Process thousands of files at once</p>
-                    </div>
+                
+                <div class="glass-effect p-6 rounded-lg border border-green-500/30 text-center">
+                    <i class="fas fa-shield-alt text-4xl text-green-600 mb-4 pulse-glow"></i>
+                    <h3 class="text-lg font-bold text-green-600 mono mb-2">OFFLINE MODE</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Process emails without internet</p>
                 </div>
-                <div class="flex items-start">
-                    <i class="fas fa-mouse-pointer text-purple-500 mr-4 mt-1 text-xl"></i>
-                    <div>
-                        <h4 class="font-bold dark:text-white">System Integration</h4>
-                        <p class="text-sm text-gray-600 dark:text-gray-300">Right-click context menu & drag-drop</p>
-                    </div>
+                
+                <div class="glass-effect p-6 rounded-lg border border-cyan-500/30 text-center">
+                    <i class="fas fa-rocket text-4xl text-cyan-600 mb-4 pulse-glow"></i>
+                    <h3 class="text-lg font-bold text-cyan-600 mono mb-2">HIGH PERFORMANCE</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Process 10,000+ emails/second</p>
                 </div>
-                <div class="flex items-start">
-                    <i class="fas fa-sync-alt text-orange-500 mr-4 mt-1 text-xl"></i>
-                    <div>
-                        <h4 class="font-bold dark:text-white">Auto Updates</h4>
-                        <p class="text-sm text-gray-600 dark:text-gray-300">Always get the latest features</p>
-                    </div>
-                </div>
-                <div class="flex items-start">
-                    <i class="fas fa-shield-alt text-red-500 mr-4 mt-1 text-xl"></i>
-                    <div>
-                        <h4 class="font-bold dark:text-white">Privacy First</h4>
-                        <p class="text-sm text-gray-600 dark:text-gray-300">Your data never leaves your computer</p>
-                    </div>
-                </div>
-                <div class="flex items-start">
-                    <i class="fas fa-rocket text-pink-500 mr-4 mt-1 text-xl"></i>
-                    <div>
-                        <h4 class="font-bold dark:text-white">Lightning Fast</h4>
-                        <p class="text-sm text-gray-600 dark:text-gray-300">10x faster than web version</p>
-                    </div>
+                
+                <div class="glass-effect p-6 rounded-lg border border-pink-500/30 text-center">
+                    <i class="fas fa-lock text-4xl text-pink-600 mb-4 pulse-glow"></i>
+                    <h3 class="text-lg font-bold text-pink-600 mono mb-2">SECURE</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Enterprise-grade encryption</p>
                 </div>
             </div>
-        </div>
-
-        <!-- System Requirements -->
-        <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-xl p-6 max-w-2xl mx-auto mb-8">
-            <h3 class="font-bold text-lg mb-4 text-center dark:text-white">System Requirements</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                <div>
-                    <i class="fas fa-memory text-blue-500 text-2xl mb-2"></i>
-                    <p class="font-semibold dark:text-white">RAM</p>
-                    <p class="text-sm text-gray-600 dark:text-gray-300">4GB minimum</p>
-                </div>
-                <div>
-                    <i class="fas fa-hdd text-green-500 text-2xl mb-2"></i>
-                    <p class="font-semibold dark:text-white">Storage</p>
-                    <p class="text-sm text-gray-600 dark:text-gray-300">500MB free space</p>
-                </div>
-                <div>
-                    <i class="fas fa-globe text-purple-500 text-2xl mb-2"></i>
-                    <p class="font-semibold dark:text-white">Internet</p>
-                    <p class="text-sm text-gray-600 dark:text-gray-300">For activation only</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="text-center">
-            <a href="/" class="text-white hover:underline font-semibold text-lg">
-                <i class="fas fa-arrow-left mr-2"></i>Back to Web App
-            </a>
         </div>
     </div>
-
-    <script>
-        // Add download tracking
-        document.addEventListener('DOMContentLoaded', function() {
-            const downloadLinks = document.querySelectorAll('a[href^="/download/"]');
-            downloadLinks.forEach(link => {
-                link.addEventListener('click', function() {
-                    const platform = this.href.split('/').pop();
-                    // Track download
-                    fetch('/api/track-download', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({platform: platform})
-                    }).catch(() => {}); // Ignore errors
-                });
-            });
-        });
-    </script>
 </body>
 </html>
