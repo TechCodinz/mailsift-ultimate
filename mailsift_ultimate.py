@@ -699,6 +699,39 @@ def index() -> str:
     return render_template("index_ultra.html", user=user)
 
 
+@app.route("/dashboard")
+def dashboard() -> str:
+    """Analytics dashboard"""
+    user = {
+        'credits': 100,
+        'subscription': 'free',
+        'email': None
+    }
+    return render_template("dashboard.html", user=user)
+
+
+@app.route("/download")
+def download() -> str:
+    """Download page"""
+    user = {
+        'credits': 100,
+        'subscription': 'free',
+        'email': None
+    }
+    return render_template("download.html", user=user)
+
+
+@app.route("/pricing")
+def pricing() -> str:
+    """Pricing page"""
+    user = {
+        'credits': 100,
+        'subscription': 'free',
+        'email': None
+    }
+    return render_template("pricing.html", user=user)
+
+
 @app.route("/api/v5/extract", methods=["POST"])
 @limiter.limit("100 per minute")
 def extract_ultimate() -> Dict[str, Any]:
