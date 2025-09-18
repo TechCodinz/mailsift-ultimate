@@ -72,6 +72,7 @@ stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
 # Database setup
 DB_PATH = "mailsift_ultimate.db"
 
+
 def init_database() -> None:
     """Initialize SQLite database for persistence"""
     conn = sqlite3.connect(DB_PATH)
@@ -125,14 +126,15 @@ def init_database() -> None:
     conn.commit()
     conn.close()
 
+
 init_database()
 
 # ======================
 # ULTRA-ADVANCED AI ENGINE
 # ======================
 
-@dataclass
 
+@dataclass
 class EmailIntelligence:
     """Complete email intelligence data"""
 
@@ -151,6 +153,7 @@ class EmailIntelligence:
     domain_info: Dict[str, Any] = None
     social_profiles: List[str] = None
     metadata: Dict[str, Any] = None
+
 
 class UltraIntelligenceEngine:
     """The most advanced email analysis engine"""
@@ -235,7 +238,7 @@ class UltraIntelligenceEngine:
             if indicator in text.lower():
                 # Extract text after indicator
                 idx = text.lower().index(indicator)
-                snippet = text[idx : idx + 100]
+                snippet = text[idx: idx + 100]
                 found = self.patterns["email"].findall(snippet)
                 emails.extend(found)
 
@@ -273,8 +276,8 @@ class UltraIntelligenceEngine:
 
         # Check domain TLD
         domain_pattern = (
-            r"^[a-z0-9]([a-z0-9\-]*[a-z0-9])?" r"(\.[a-z0-9]([a-z0-9\-]*[a-z0-9])?)*$"
-        )
+            r"^[a-z0-9]([a-z0-9\-]*[a-z0-9])?"
+            r"(\.[a-z0-9]([a-z0-9\-]*[a-z0-9])?)*$")
         if not re.match(domain_pattern, domain.lower()):
             return False
 
@@ -298,10 +301,12 @@ class UltraIntelligenceEngine:
         intelligence.category = self._categorize(email)
 
         # Business intelligence
-        intelligence.priority = self._calculate_priority(intelligence.lead_score)
+        intelligence.priority = self._calculate_priority(
+            intelligence.lead_score)
         intelligence.value_score = self._calculate_value(email)
         intelligence.engagement_probability = self._predict_engagement(email)
-        intelligence.conversion_likelihood = self._predict_conversion(intelligence)
+        intelligence.conversion_likelihood = self._predict_conversion(
+            intelligence)
 
         # Enrich with external data
         intelligence.domain_info = self._get_domain_info(email)
@@ -325,21 +330,21 @@ class UltraIntelligenceEngine:
             # Additional checks
             if '@' not in email or '.' not in email:
                 return False
-            
+
             parts = email.split("@")
             if len(parts) != 2:
                 return False
-                
+
             local, domain = parts
-            
+
             # Check local part
             if len(local) < 1 or len(local) > 64:
                 return False
-                
+
             # Check domain
             if len(domain) < 3 or '.' not in domain:
                 return False
-                
+
             # DNS check (if possible)
             try:
                 dns.resolver.resolve(domain, "MX")
@@ -347,7 +352,7 @@ class UltraIntelligenceEngine:
             except Exception:
                 # If DNS check fails, still return True for basic format
                 return True
-                
+
         except Exception:
             return False
 
@@ -474,7 +479,11 @@ class UltraIntelligenceEngine:
             if any(pattern in domain.lower() for pattern in patterns):
                 return category
 
-        if not any(provider in domain for provider in ["gmail", "yahoo", "hotmail"]):
+        if not any(
+            provider in domain for provider in [
+                "gmail",
+                "yahoo",
+                "hotmail"]):
             return "corporate"
 
         return "personal"
@@ -555,7 +564,8 @@ class UltraIntelligenceEngine:
         """Get confidence factors for transparency"""
         return {
             "valid_format": bool(
-                re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", email)
+                re.match(
+                    r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", email)
             ),
             "has_mx_record": True,  # Would check actual MX
             "not_disposable": self._calculate_risk_score(email) < 0.5,
@@ -564,6 +574,7 @@ class UltraIntelligenceEngine:
             ),
         }
 
+
 # Initialize engine
 intelligence_engine = UltraIntelligenceEngine()
 
@@ -571,26 +582,37 @@ intelligence_engine = UltraIntelligenceEngine()
 # REVENUE OPTIMIZATION
 # ======================
 
+
 class RevenueEngine:
     """Advanced revenue optimization system"""
 
     def __init__(self) -> None:
         self.pricing_tiers = {
-            "free": {"price": 0, "credits": 100, "features": ["basic_extraction"]},
+            "free": {
+                "price": 0,
+                "credits": 100,
+                "features": ["basic_extraction"]},
             "starter": {
                 "price": 29,
                 "credits": 1000,
-                "features": ["advanced_extraction", "api_access"],
+                "features": [
+                    "advanced_extraction",
+                    "api_access"],
             },
             "professional": {
                 "price": 99,
                 "credits": 10000,
-                "features": ["all", "priority_support"],
+                "features": [
+                    "all",
+                    "priority_support"],
             },
             "enterprise": {
                 "price": 499,
                 "credits": -1,
-                "features": ["all", "dedicated_support", "sla"],
+                "features": [
+                    "all",
+                    "dedicated_support",
+                    "sla"],
             },
         }
 
@@ -657,21 +679,22 @@ class RevenueEngine:
 
         return monthly_value * predicted_months
 
+
 revenue_engine = RevenueEngine()
 
 # ======================
 # API ENDPOINTS
 # ======================
 
-@app.route("/")
 
+@app.route("/")
 def index() -> str:
     """Ultra-modern landing page"""
     return render_template("index_ultra.html")
 
+
 @app.route("/api/v5/extract", methods=["POST"])
 @limiter.limit("100 per minute")
-
 def extract_ultimate() -> Dict[str, Any]:
     """Ultimate extraction endpoint with full intelligence"""
     start_time = time.time()
@@ -722,25 +745,22 @@ def extract_ultimate() -> Dict[str, Any]:
         for future in futures:
             try:
                 intelligence = future.result(timeout=5)
-                results.append(
-                    {
-                        "email": intelligence.email,
-                        "confidence": intelligence.confidence,
-                        "lead_score": intelligence.lead_score,
-                        "deliverable": intelligence.deliverability,
-                        "risk_score": intelligence.risk_score,
-                        "intent": intelligence.intent,
-                        "sentiment": intelligence.sentiment,
-                        "category": intelligence.category,
-                        "priority": intelligence.priority,
-                        "value_score": intelligence.value_score,
-                        "engagement_probability": intelligence.engagement_probability,
-                        "conversion_likelihood": intelligence.conversion_likelihood,
-                        "domain_info": intelligence.domain_info,
-                        "social_profiles": intelligence.social_profiles,
-                        "metadata": intelligence.metadata,
-                    }
-                )
+                results.append({"email": intelligence.email,
+                                "confidence": intelligence.confidence,
+                                "lead_score": intelligence.lead_score,
+                                "deliverable": intelligence.deliverability,
+                                "risk_score": intelligence.risk_score,
+                                "intent": intelligence.intent,
+                                "sentiment": intelligence.sentiment,
+                                "category": intelligence.category,
+                                "priority": intelligence.priority,
+                                "value_score": intelligence.value_score,
+                                "engagement_probability": intelligence.engagement_probability,
+                                "conversion_likelihood": intelligence.conversion_likelihood,
+                                "domain_info": intelligence.domain_info,
+                                "social_profiles": intelligence.social_profiles,
+                                "metadata": intelligence.metadata,
+                                })
             except Exception as e:
                 logger.error(f"Analysis error: {e}")
 
@@ -789,9 +809,9 @@ def extract_ultimate() -> Dict[str, Any]:
         }
     )
 
+
 @app.route("/api/v5/bulk", methods=["POST"])
 @limiter.limit("10 per minute")
-
 def bulk_extract() -> Dict[str, Any]:
     """Bulk extraction for multiple sources"""
     data = request.get_json()
@@ -831,10 +851,12 @@ def bulk_extract() -> Dict[str, Any]:
             }
         )
 
-    return jsonify({"success": True, "total": len(analyzed), "emails": analyzed})
+    return jsonify({"success": True,
+                    "total": len(analyzed),
+                    "emails": analyzed})
+
 
 @app.route("/api/v5/export/<format>", methods=["POST"])
-
 def export_emails(format: str) -> Dict[str, Any]:
     """Export emails in various formats"""
     data = request.get_json()
@@ -863,9 +885,9 @@ def export_emails(format: str) -> Dict[str, Any]:
 
     return jsonify({"error": "Invalid format"}), 400
 
+
 @app.route("/api/v5/verify", methods=["POST"])
 @limiter.limit("50 per minute")
-
 def verify_email() -> Dict[str, Any]:
     """Real-time email verification"""
     data = request.get_json()
@@ -883,8 +905,8 @@ def verify_email() -> Dict[str, Any]:
         }
     )
 
-@app.route("/api/v5/subscribe", methods=["POST"])
 
+@app.route("/api/v5/subscribe", methods=["POST"])
 def subscribe() -> Dict[str, Any]:
     """Subscription with Stripe"""
     data = request.get_json()
@@ -913,14 +935,13 @@ def subscribe() -> Dict[str, Any]:
             {
                 "subscription_id": subscription.id,
                 "client_secret": subscription.latest_invoice.payment_intent.client_secret,
-            }
-        )
+            })
 
     except stripe.error.StripeError as e:
         return jsonify({"error": str(e)}), 400
 
-@app.route("/api/v5/stats")
 
+@app.route("/api/v5/stats")
 def get_stats() -> Dict[str, Any]:
     """Get platform statistics"""
     conn = sqlite3.connect(DB_PATH)
@@ -946,8 +967,8 @@ def get_stats() -> Dict[str, Any]:
         }
     )
 
-@app.route("/health")
 
+@app.route("/health")
 def health() -> Dict[str, Any]:
     """Health check endpoint"""
     checks = {
@@ -976,6 +997,7 @@ def health() -> Dict[str, Any]:
 # HELPER FUNCTIONS
 # ======================
 
+
 def _check_credits(user_id: str, required: int) -> bool:
     """Check if user has enough credits"""
     conn = sqlite3.connect(DB_PATH)
@@ -989,6 +1011,7 @@ def _check_credits(user_id: str, required: int) -> bool:
 
     credits = result[0]
     return credits == -1 or credits >= required  # -1 means unlimited
+
 
 def _deduct_credits(user_id: str, amount: int) -> None:
     """Deduct credits from user"""
@@ -1008,6 +1031,7 @@ def _deduct_credits(user_id: str, amount: int) -> None:
     conn.commit()
     conn.close()
 
+
 def _get_credits(user_id: str) -> int:
     """Get user credits"""
     conn = sqlite3.connect(DB_PATH)
@@ -1017,6 +1041,7 @@ def _get_credits(user_id: str) -> int:
     conn.close()
 
     return result[0] if result else 100
+
 
 def _track_extraction(user_id: str, count: int, source: str) -> None:
     """Track extraction in database"""
@@ -1044,6 +1069,7 @@ def _track_extraction(user_id: str, count: int, source: str) -> None:
 
     conn.commit()
     conn.close()
+
 
 def _generate_recommendations(emails: List[Dict], analytics: Dict) -> Dict:
     """Generate AI-powered recommendations"""
@@ -1092,6 +1118,7 @@ def _generate_recommendations(emails: List[Dict], analytics: Dict) -> Dict:
 
     return recommendations
 
+
 def _check_database() -> str:
     """Check database connection"""
     try:
@@ -1101,6 +1128,7 @@ def _check_database() -> str:
         return "healthy"
     except Exception:
         return "unhealthy"
+
 
 if __name__ == "__main__":
     print("\n" + "=" * 80)
@@ -1132,5 +1160,5 @@ if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
     host = os.environ.get('HOST', '0.0.0.0')
     debug = os.environ.get('DEBUG', 'False').lower() == 'true'
-    
+
     app.run(debug=debug, port=port, host=host, threaded=True)
