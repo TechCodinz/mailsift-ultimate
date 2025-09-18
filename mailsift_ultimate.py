@@ -690,7 +690,13 @@ revenue_engine = RevenueEngine()
 @app.route("/")
 def index() -> str:
     """Ultra-modern landing page"""
-    return render_template("index_ultra.html")
+    # Create a default user object for the template
+    user = {
+        'credits': 100,  # Default credits for new users
+        'subscription': 'free',
+        'email': None
+    }
+    return render_template("index_ultra.html", user=user)
 
 
 @app.route("/api/v5/extract", methods=["POST"])
