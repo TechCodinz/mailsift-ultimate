@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en" x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }" :class="{ 'dark': darkMode }">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MailSift - AI Email Intelligence Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 20px rgba(147, 51, 234, 0.5); } 50% { box-shadow: 0 0 40px rgba(147, 51, 234, 0.8); } }
+        .float-animation { animation: float 3s ease-in-out infinite; }
+        .pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+    </style>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8B5CF6',
+                        secondary: '#EC4899'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <div x-data="mailsiftApp()">
+        <!-- Header -->
+        <header class="bg-white dark:bg-gray-800 shadow-lg sticky top-0 z-50 transition-all duration-300">
+            <div class="container mx-auto px-4 py-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center space-x-3">
+                        <div class="float-animation">
+                            <i class="fas fa-envelope-open-text text-3xl text-primary"></i>
+                        </div>
+                        <h1 class="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                            MailSift Pro
+                        </h1>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <!-- Dark Mode Toggle -->
+                        <button @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode)" 
+                                class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <i class="fas" :class="darkMode ? 'fa-sun text-yellow-400' : 'fa-moon text-gray-600'"></i>
+                        </button>
+                        
+                        <!-- User Info -->
+                        <div class="flex items-center space-x-3 bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded-lg">
+                            <div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">Credits</div>
+                                <div class="font-bold text-primary">{{ user.credits }}</div>
+                            </div>
+                            <div class="border-l pl-3">
+                                <div class="text-xs text-gray-500 dark:text-gray-400">Plan</div>
+                                <div class="font-bold">{{ user.plan|upper }}</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        {% if user.plan == 'free' %}
+                        <a href="/pricing" class="bg-gradient-to-r from-primary to-secondary text-white px-4 py-2 rounded-lg hover:opacity-90 transition">
+                            <i class="fas fa-crown mr-2"></i>Upgrade
+                        </a>
+                        {% endif %}
+                        <a href="/dashboard" class="bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+                            <i class="fas fa-chart-line"></i>
+                        </a>
+                        <a href="/download" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
+                            <i class="fas fa-download mr-2"></i>Get App
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="container mx-auto px-4 py-8">
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transform hover:scale-105 transition">
+                    <i class="fas fa-envelope text-3xl text-blue-500 mb-2"></i>
+                    <div class="text-3xl font-bold" x-text="stats.total">0</div>
+                    <div class="text-gray-500 dark:text-gray-400">Emails Found</div>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transform hover:scale-105 transition">
+                    <i class="fas fa-star text-3xl text-yellow-500 mb-2"></i>
+                    <div class="text-3xl font-bold" x-text="stats.highValue">0</div>
+                    <div class="text-gray-500 dark:text-gray-400">High Value</div>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transform hover:scale-105 transition">
+                    <i class="fas fa-dollar-sign text-3xl text-green-500 mb-2"></i>
+                    <div class="text-3xl font-bold">$<span x-text="stats.value">0</span></div>
+                    <div class="text-gray-500 dark:text-gray-400">Est. Value</div>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transform hover:scale-105 transition">
+                    <i class="fas fa-tachometer-alt text-3xl text-purple-500 mb-2"></i>
+                    <div class="text-3xl font-bold"><span x-text="stats.speed">0</span>ms</div>
+                    <div class="text-gray-500 dark:text-gray-400">Speed</div>
+                </div>
+            </div>
+
+            <!-- Extraction Interface -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 mb-8 pulse-glow">
+                <h2 class="text-2xl font-bold mb-6 dark:text-white">
+                    <i class="fas fa-magic mr-2 text-primary"></i>
+                    Extract Emails with AI Intelligence
+                </h2>
+
+                <!-- Input Tabs -->
+                <div class="flex space-x-2 mb-6">
+                    <button @click="mode = 'text'" 
+                            :class="mode === 'text' ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
+                            class="px-6 py-3 rounded-lg font-semibold transition">
+                        <i class="fas fa-keyboard mr-2"></i>Text
+                    </button>
+                    <button @click="mode = 'url'" 
+                            :class="mode === 'url' ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
+                            class="px-6 py-3 rounded-lg font-semibold transition">
+                        <i class="fas fa-globe mr-2"></i>URL
+                    </button>
+                    <button @click="mode = 'file'" 
+                            :class="mode === 'file' ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
+                            class="px-6 py-3 rounded-lg font-semibold transition">
+                        <i class="fas fa-file-upload mr-2"></i>File
+                    </button>
+                </div>
+
+                <!-- Input Areas -->
+                <div x-show="mode === 'text'" x-transition>
+                    <textarea x-model="inputText" 
+                              class="w-full p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 dark:text-white focus:border-primary transition"
+                              rows="6" placeholder="Paste your text here..."></textarea>
+                </div>
+
+                <div x-show="mode === 'url'" x-transition>
+                    <input x-model="inputUrl" type="url" 
+                           class="w-full p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 dark:text-white focus:border-primary transition"
+                           placeholder="https://example.com">
+                </div>
+
+                <div x-show="mode === 'file'" x-transition>
+                    <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-12 text-center hover:border-primary transition cursor-pointer"
+                         @click="$refs.fileInput.click()"
+                         @dragover.prevent
+                         @drop.prevent="handleFileDrop($event)">
+                        <i class="fas fa-cloud-upload-alt text-6xl text-gray-400 mb-4"></i>
+                        <p class="text-xl text-gray-600 dark:text-gray-400">Drop files here or click to browse</p>
+                        <p class="text-sm text-gray-500 mt-2">Supports: PDF, DOCX, Excel, TXT, CSV, Images</p>
+                        <input type="file" x-ref="fileInput" @change="handleFileSelect($event)" class="hidden" 
+                               accept=".pdf,.docx,.xlsx,.txt,.csv,.jpg,.png">
+                        <div x-show="selectedFile" class="mt-4 p-3 bg-green-100 dark:bg-green-900 rounded-lg">
+                            <i class="fas fa-file mr-2"></i>
+                            <span x-text="selectedFile?.name"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Extract Button -->
+                <button @click="extractEmails()" 
+                        :disabled="processing"
+                        class="w-full mt-6 bg-gradient-to-r from-primary to-secondary text-white font-bold py-4 rounded-lg text-lg hover:opacity-90 disabled:opacity-50 transition transform hover:scale-[1.02]">
+                    <span x-show="!processing">
+                        <i class="fas fa-wand-magic-sparkles mr-2"></i>
+                        Extract Emails Now
+                    </span>
+                    <span x-show="processing">
+                        <i class="fas fa-spinner fa-spin mr-2"></i>
+                        Processing... <span x-text="progress + '%'"></span>
+                    </span>
+                </button>
+
+                <!-- Progress Bar -->
+                <div x-show="processing" class="mt-4">
+                    <div class="bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
+                        <div class="bg-gradient-to-r from-primary to-secondary h-full transition-all duration-300"
+                             :style="`width: ${progress}%`"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div x-show="results.length > 0" x-transition class="space-y-6">
+                <!-- Export Buttons -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold dark:text-white">
+                            <i class="fas fa-trophy text-yellow-500 mr-2"></i>
+                            Results (<span x-text="results.length"></span> emails)
+                        </h3>
+                        <div class="flex space-x-2">
+                            <button @click="exportData('csv')" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
+                                <i class="fas fa-file-csv mr-2"></i>CSV
+                            </button>
+                            <button @click="exportData('json')" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                                <i class="fas fa-code mr-2"></i>JSON
+                            </button>
+                            <button @click="exportData('txt')" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
+                                <i class="fas fa-file-alt mr-2"></i>TXT
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Email List -->
+                    <div class="space-y-2 max-h-[500px] overflow-y-auto">
+                        <template x-for="email in results" :key="email.email">
+                            <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                                <div class="flex justify-between items-center">
+                                    <div class="flex-1">
+                                        <div class="font-mono text-blue-600 dark:text-blue-400" x-text="email.email"></div>
+                                        <div class="flex items-center space-x-4 mt-2 text-sm">
+                                            <span class="bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 px-2 py-1 rounded">
+                                                <i class="fas fa-tag mr-1"></i><span x-text="email.category"></span>
+                                            </span>
+                                            <span class="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
+                                                <i class="fas fa-bullseye mr-1"></i><span x-text="email.intent"></span>
+                                            </span>
+                                            <span :class="{
+                                                'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300': email.risk === 'low',
+                                                'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300': email.risk === 'medium',
+                                                'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300': email.risk === 'high'
+                                            }" class="px-2 py-1 rounded">
+                                                <i class="fas fa-shield-alt mr-1"></i>Risk: <span x-text="email.risk"></span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="text-3xl font-bold" :class="{
+                                            'text-green-500': email.lead_score > 70,
+                                            'text-yellow-500': email.lead_score > 40 && email.lead_score <= 70,
+                                            'text-red-500': email.lead_score <= 40
+                                        }" x-text="email.lead_score"></div>
+                                        <div class="text-xs text-gray-500">Lead Score</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- AI Recommendations -->
+                <div x-show="recommendations.length > 0" class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-6">
+                    <h4 class="font-bold text-lg mb-4 dark:text-white">
+                        <i class="fas fa-brain text-primary mr-2"></i>
+                        AI Insights & Recommendations
+                    </h4>
+                    <ul class="space-y-2">
+                        <template x-for="rec in recommendations">
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mr-2 mt-1"></i>
+                                <span class="dark:text-gray-300" x-text="rec"></span>
+                            </li>
+                        </template>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function mailsiftApp() {
+            return {
+                mode: 'text',
+                inputText: '',
+                inputUrl: '',
+                selectedFile: null,
+                processing: false,
+                progress: 0,
+                results: [],
+                recommendations: [],
+                stats: {
+                    total: 0,
+                    highValue: 0,
+                    value: 0,
+                    speed: 0
+                },
+
+                async extractEmails() {
+                    this.processing = true;
+                    this.progress = 0;
+                    
+                    // Simulate progress
+                    const progressInterval = setInterval(() => {
+                        this.progress = Math.min(this.progress + 10, 90);
+                    }, 100);
+
+                    try {
+                        let formData;
+                        
+                        if (this.mode === 'file' && this.selectedFile) {
+                            formData = new FormData();
+                            formData.append('file', this.selectedFile);
+                        } else {
+                            formData = JSON.stringify({
+                                text: this.mode === 'text' ? this.inputText : '',
+                                url: this.mode === 'url' ? this.inputUrl : ''
+                            });
+                        }
+
+                        const response = await fetch('/api/extract', {
+                            method: 'POST',
+                            headers: this.mode === 'file' ? {} : {'Content-Type': 'application/json'},
+                            body: formData
+                        });
+
+                        const data = await response.json();
+                        
+                        if (response.status === 402) {
+                            window.location.href = '/pricing';
+                            return;
+                        }
+
+                        if (data.success) {
+                            this.results = data.emails;
+                            this.recommendations = data.recommendations || [];
+                            this.stats = {
+                                total: data.analytics.total,
+                                highValue: data.analytics.high_value,
+                                value: Math.round(data.analytics.total_value),
+                                speed: data.analytics.processing_time
+                            };
+                        }
+                    } catch (error) {
+                        alert('Error: ' + error.message);
+                    } finally {
+                        clearInterval(progressInterval);
+                        this.progress = 100;
+                        setTimeout(() => {
+                            this.processing = false;
+                        }, 500);
+                    }
+                },
+
+                handleFileSelect(event) {
+                    this.selectedFile = event.target.files[0];
+                },
+
+                handleFileDrop(event) {
+                    this.selectedFile = event.dataTransfer.files[0];
+                },
+
+                async exportData(format) {
+                    const response = await fetch(`/api/export/${format}`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({emails: this.results})
+                    });
+
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `emails.${format}`;
+                    a.click();
+                }
+            };
+        }
+    </script>
+</body>
+</html>

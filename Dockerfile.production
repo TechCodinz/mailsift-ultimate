@@ -1,0 +1,60 @@
+# Production-ready Docker configuration
+FROM python:3.11-slim-bullseye
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    postgresql-client \
+    redis-tools \
+    tesseract-ocr \
+    poppler-utils \
+    nginx \
+    supervisor \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app directory
+WORKDIR /app
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip install gunicorn gevent redis stripe sentry-sdk
+
+# Copy application
+COPY . .
+
+# Create non-root user
+RUN useradd -m -u 1000 mailsift && chown -R mailsift:mailsift /app
+
+# Create data directories
+RUN mkdir -p /app/data /app/logs /app/uploads && \
+    chown -R mailsift:mailsift /app/data /app/logs /app/uploads
+
+# Switch to non-root user
+USER mailsift
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:5000/health || exit 1
+
+# Expose port
+EXPOSE 5000
+
+# Production server with Gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", \
+     "--workers", "4", \
+     "--worker-class", "gevent", \
+     "--timeout", "120", \
+     "--keep-alive", "5", \
+     "--max-requests", "1000", \
+     "--max-requests-jitter", "50", \
+     "--log-level", "info", \
+     "mailsift_ultimate:app"]
+

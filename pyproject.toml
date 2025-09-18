@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mailsift"
+version = "0.1.0"
+description = "MailSift — smart email extractor"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [ { name = "MailSift contributors" } ]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "C", "ANN", "C90"]
+ignore = ["ANN101", "ANN102"]  # Ignore self and cls annotations
+fixable = ["W", "E", "F", "C"]  # Auto-fix whitespace and common errors
+unfixable = []
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unreachable = true
+disallow_untyped_defs = true
+disallow_any_generics = true
+no_implicit_optional = true

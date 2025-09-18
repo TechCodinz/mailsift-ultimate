@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MailSift Clean - Email Intelligence Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-blue-100 to-purple-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-purple-600">MailSift Clean</h1>
+                    <p class="text-gray-600">AI-Powered Email Intelligence Platform</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="bg-purple-100 px-4 py-2 rounded">
+                        <span class="text-sm">Credits:</span>
+                        <span class="font-bold text-purple-600" id="credits">{{ user.credits }}</span>
+                    </div>
+                    <div class="bg-blue-100 px-4 py-2 rounded">
+                        <span class="text-sm">Plan:</span>
+                        <span class="font-bold">{{ user.plan|upper }}</span>
+                    </div>
+                    <a href="/pricing" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+                        Upgrade
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Interface -->
+        <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
+            <h2 class="text-2xl font-bold mb-6">Extract Emails with AI</h2>
+            
+            <!-- Input Tabs -->
+            <div class="flex space-x-2 mb-6">
+                <button onclick="setMode('text')" id="text-btn" class="px-4 py-2 bg-purple-600 text-white rounded">Text</button>
+                <button onclick="setMode('url')" id="url-btn" class="px-4 py-2 bg-gray-300 rounded">URL</button>
+                <button onclick="setMode('file')" id="file-btn" class="px-4 py-2 bg-gray-300 rounded">File</button>
+            </div>
+
+            <!-- Input Areas -->
+            <div id="text-input">
+                <textarea id="input-text" class="w-full p-3 border rounded" rows="6" 
+                          placeholder="Paste your text here..."></textarea>
+            </div>
+
+            <div id="url-input" class="hidden">
+                <input type="url" id="input-url" class="w-full p-3 border rounded" 
+                       placeholder="https://example.com">
+            </div>
+
+            <div id="file-input" class="hidden">
+                <input type="file" id="file" class="w-full p-3 border rounded" 
+                       accept=".pdf,.docx,.txt,.csv">
+            </div>
+
+            <button onclick="extractEmails()" 
+                    class="w-full mt-6 bg-purple-600 text-white font-bold py-3 rounded hover:bg-purple-700">
+                Extract Emails
+            </button>
+        </div>
+
+        <!-- Results -->
+        <div id="results" class="hidden bg-white rounded-lg shadow-lg p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Results</h3>
+                <div class="space-x-2">
+                    <button onclick="exportData('csv')" class="bg-green-600 text-white px-4 py-2 rounded">CSV</button>
+                    <button onclick="exportData('json')" class="bg-blue-600 text-white px-4 py-2 rounded">JSON</button>
+                </div>
+            </div>
+            
+            <div id="email-list" class="space-y-2"></div>
+        </div>
+    </div>
+
+    <script>
+        let mode = 'text';
+        let extractedEmails = [];
+
+        function setMode(newMode) {
+            mode = newMode;
+            
+            // Update buttons
+            document.querySelectorAll('[id$="-btn"]').forEach(btn => {
+                btn.className = btn.id === newMode + '-btn' 
+                    ? 'px-4 py-2 bg-purple-600 text-white rounded' 
+                    : 'px-4 py-2 bg-gray-300 rounded';
+            });
+            
+            // Update inputs
+            document.querySelectorAll('[id$="-input"]').forEach(input => {
+                input.classList.toggle('hidden', !input.id.startsWith(newMode));
+            });
+        }
+
+        async function extractEmails() {
+            const data = {};
+            
+            if (mode === 'text') {
+                data.text = document.getElementById('input-text').value;
+            } else if (mode === 'url') {
+                data.url = document.getElementById('input-url').value;
+            } else if (mode === 'file') {
+                const fileInput = document.getElementById('file');
+                if (fileInput.files.length === 0) {
+                    alert('Please select a file');
+                    return;
+                }
+                
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                
+                try {
+                    const response = await fetch('/api/extract', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await response.json();
+                    displayResults(result);
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                }
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/extract', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                displayResults(result);
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        function displayResults(data) {
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            extractedEmails = data.emails;
+            document.getElementById('credits').textContent = data.credits_remaining;
+
+            const listEl = document.getElementById('email-list');
+            listEl.innerHTML = '';
+            
+            data.emails.forEach(email => {
+                const div = document.createElement('div');
+                div.className = 'flex justify-between items-center p-3 bg-gray-50 rounded';
+                div.innerHTML = `
+                    <div>
+                        <div class="font-mono">${email.email}</div>
+                        <div class="text-sm text-gray-500">
+                            ${email.category} • ${email.intent} • Priority: ${email.priority}
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-bold ${email.lead_score > 70 ? 'text-green-600' : 'text-yellow-600'}">
+                            ${email.lead_score}
+                        </div>
+                        <div class="text-xs text-gray-500">Score</div>
+                    </div>
+                `;
+                listEl.appendChild(div);
+            });
+
+            document.getElementById('results').classList.remove('hidden');
+        }
+
+        async function exportData(format) {
+            const response = await fetch(`/api/export/${format}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({emails: extractedEmails})
+            });
+
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `emails.${format}`;
+            a.click();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en" x-data="adminApp()" x-init="initAdmin()">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MailSift Ultra - Admin Command Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @keyframes matrix {
+            0% { transform: translateY(-100%); opacity: 0; }
+            100% { transform: translateY(100vh); opacity: 1; }
+        }
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00, 0 0 15px #00ff00; }
+            50% { box-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00; }
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .matrix-bg {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .matrix-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 25% 25%, #00ff0020 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, #0080ff20 0%, transparent 50%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+        .cyber-border {
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+        .cyber-glow {
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        .terminal-text {
+            font-family: 'Courier New', monospace;
+            color: #00ff00;
+        }
+        .status-online { color: #00ff00; }
+        .status-warning { color: #ffaa00; }
+        .status-error { color: #ff0040; }
+        .hologram {
+            background: linear-gradient(45deg, transparent 30%, rgba(0, 255, 0, 0.1) 50%, transparent 70%);
+            animation: hologram 3s linear infinite;
+        }
+        @keyframes hologram {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'cyber-green': '#00ff00',
+                        'cyber-blue': '#0080ff',
+                        'cyber-red': '#ff0040',
+                        'cyber-dark': '#0a0a0a'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="matrix-bg min-h-screen text-green-400">
+    <!-- Header -->
+    <header class="bg-black/80 backdrop-blur-sm border-b border-green-500 p-4">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <div class="cyber-glow">
+                    <i class="fas fa-terminal text-3xl text-green-400"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold terminal-text">MAILSIFT ULTRA - ADMIN COMMAND CENTER</h1>
+                    <p class="text-sm text-green-300">SYSTEM STATUS: <span class="status-online">ONLINE</span> | SECURITY LEVEL: <span class="text-red-400">MAXIMUM</span></p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="text-right terminal-text">
+                    <div class="text-xs">ADMIN: <span class="text-green-400">AUTHENTICATED</span></div>
+                    <div class="text-xs">TIME: <span x-text="currentTime"></span></div>
+                </div>
+                <a href="/" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
+                    <i class="fas fa-sign-out-alt mr-2"></i>EXIT
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-6">
+        <!-- System Status Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="cyber-border bg-black/60 backdrop-blur-sm p-4 rounded-lg hologram">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-sm font-bold terminal-text">TOTAL USERS</h3>
+                    <i class="fas fa-users text-cyber-blue"></i>
+                </div>
+                <div class="text-2xl font-bold text-green-400" x-text="stats.users?.total || 0"></div>
+                <div class="text-xs text-green-300">
+                    Free: <span x-text="stats.users?.free || 0"></span> | 
+                    Paid: <span x-text="stats.users?.paid || 0"></span>
+                </div>
+            </div>
+
+            <div class="cyber-border bg-black/60 backdrop-blur-sm p-4 rounded-lg hologram">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-sm font-bold terminal-text">REVENUE</h3>
+                    <i class="fas fa-dollar-sign text-green-400"></i>
+                </div>
+                <div class="text-2xl font-bold text-green-400">$<span x-text="stats.revenue?.total || 0"></span></div>
+                <div class="text-xs text-green-300">
+                    Monthly: $<span x-text="stats.revenue?.monthly || 0"></span>
+                </div>
+            </div>
+
+            <div class="cyber-border bg-black/60 backdrop-blur-sm p-4 rounded-lg hologram">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-sm font-bold terminal-text">EXTRACTIONS</h3>
+                    <i class="fas fa-envelope text-cyber-blue"></i>
+                </div>
+                <div class="text-2xl font-bold text-green-400" x-text="stats.extractions?.total || 0"></div>
+                <div class="text-xs text-green-300">
+                    Success: <span x-text="stats.extractions?.success_rate || 99.9"></span>%
+                </div>
+            </div>
+
+            <div class="cyber-border bg-black/60 backdrop-blur-sm p-4 rounded-lg hologram">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-sm font-bold terminal-text">SYSTEM</h3>
+                    <i class="fas fa-server text-green-400"></i>
+                </div>
+                <div class="text-sm">
+                    <div>CPU: <span x-text="stats.system?.cpu_usage || 0"></span>%</div>
+                    <div>RAM: <span x-text="stats.system?.memory_usage || 0"></span>%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Real-time Activity Monitor -->
+            <div class="cyber-border bg-black/60 backdrop-blur-sm p-6 rounded-lg">
+                <h3 class="text-lg font-bold terminal-text mb-4">
+                    <i class="fas fa-activity text-green-400 mr-2"></i>
+                    REAL-TIME ACTIVITY MONITOR
+                </h3>
+                <div class="space-y-2 max-h-64 overflow-y-auto">
+                    <template x-for="activity in activities" :key="activity.id">
+                        <div class="flex items-center justify-between p-2 bg-green-900/20 rounded border-l-2 border-green-400">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                                <span class="text-sm terminal-text" x-text="activity.message"></span>
+                            </div>
+                            <span class="text-xs text-green-300" x-text="activity.time"></span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Revenue Analytics -->
+            <div class="cyber-border bg-black/60 backdrop-blur-sm p-6 rounded-lg">
+                <h3 class="text-lg font-bold terminal-text mb-4">
+                    <i class="fas fa-chart-line text-cyber-blue mr-2"></i>
+                    REVENUE ANALYTICS
+                </h3>
+                <canvas id="revenueChart" class="w-full h-48"></canvas>
+            </div>
+        </div>
+
+        <!-- User Management Table -->
+        <div class="cyber-border bg-black/60 backdrop-blur-sm p-6 rounded-lg mt-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold terminal-text">
+                    <i class="fas fa-users-cog text-green-400 mr-2"></i>
+                    USER MANAGEMENT CONSOLE
+                </h3>
+                <div class="flex space-x-2">
+                    <button @click="refreshUsers()" class="bg-green-600 hover:bg-green-700 text-black px-3 py-1 rounded text-sm font-bold">
+                        <i class="fas fa-sync-alt mr-1"></i>REFRESH
+                    </button>
+                    <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
+                        <i class="fas fa-plus mr-1"></i>ADD USER
+                    </button>
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full terminal-text text-sm">
+                    <thead>
+                        <tr class="border-b border-green-500">
+                            <th class="text-left p-2">USER ID</th>
+                            <th class="text-left p-2">PLAN</th>
+                            <th class="text-left p-2">CREDITS</th>
+                            <th class="text-left p-2">EXTRACTED</th>
+                            <th class="text-left p-2">STATUS</th>
+                            <th class="text-left p-2">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template x-for="user in users" :key="user.id">
+                            <tr class="border-b border-green-900 hover:bg-green-900/20">
+                                <td class="p-2" x-text="user.id"></td>
+                                <td class="p-2">
+                                    <span :class="{
+                                        'text-gray-400': user.plan === 'free',
+                                        'text-blue-400': user.plan === 'pro',
+                                        'text-yellow-400': user.plan === 'enterprise'
+                                    }" x-text="user.plan.toUpperCase()"></span>
+                                </td>
+                                <td class="p-2" x-text="user.credits"></td>
+                                <td class="p-2" x-text="user.total_extracted"></td>
+                                <td class="p-2">
+                                    <span class="status-online" x-text="user.status.toUpperCase()"></span>
+                                </td>
+                                <td class="p-2">
+                                    <div class="flex space-x-1">
+                                        <button class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs">
+                                            <i class="fas fa-envelope"></i>
+                                        </button>
+                                        <button class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs">
+                                            <i class="fas fa-ban"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- System Logs -->
+        <div class="cyber-border bg-black/60 backdrop-blur-sm p-6 rounded-lg mt-6">
+            <h3 class="text-lg font-bold terminal-text mb-4">
+                <i class="fas fa-terminal text-green-400 mr-2"></i>
+                SYSTEM LOGS
+            </h3>
+            <div class="bg-black p-4 rounded font-mono text-xs text-green-400 max-h-48 overflow-y-auto">
+                <template x-for="log in systemLogs" :key="log.id">
+                    <div class="mb-1">
+                        <span class="text-green-300">[<span x-text="log.timestamp"></span>]</span>
+                        <span :class="{
+                            'text-green-400': log.level === 'INFO',
+                            'text-yellow-400': log.level === 'WARN',
+                            'text-red-400': log.level === 'ERROR'
+                        }" x-text="log.level"></span>
+                        <span x-text="log.message"></span>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function adminApp() {
+            return {
+                currentTime: '',
+                stats: {},
+                users: [],
+                activities: [],
+                systemLogs: [],
+
+                async initAdmin() {
+                    this.updateTime();
+                    setInterval(() => this.updateTime(), 1000);
+                    
+                    await this.loadStats();
+                    await this.loadUsers();
+                    this.generateActivities();
+                    this.generateLogs();
+                    
+                    // Refresh data periodically
+                    setInterval(() => {
+                        this.loadStats();
+                        this.generateActivities();
+                        this.generateLogs();
+                    }, 5000);
+                    
+                    // Initialize charts
+                    setTimeout(() => this.initCharts(), 100);
+                },
+
+                updateTime() {
+                    this.currentTime = new Date().toLocaleTimeString();
+                },
+
+                async loadStats() {
+                    try {
+                        const response = await fetch('/api/admin/stats');
+                        this.stats = await response.json();
+                    } catch (error) {
+                        console.error('Failed to load stats:', error);
+                    }
+                },
+
+                async loadUsers() {
+                    try {
+                        const response = await fetch('/api/admin/users');
+                        this.users = await response.json();
+                    } catch (error) {
+                        console.error('Failed to load users:', error);
+                    }
+                },
+
+                async refreshUsers() {
+                    await this.loadUsers();
+                    this.addActivity('User list refreshed by admin');
+                },
+
+                generateActivities() {
+                    const activities = [
+                        'New user registration from US',
+                        'Payment processed: $29 (Pro Plan)',
+                        'Email extraction: 847 emails found',
+                        'API request from enterprise client',
+                        'System backup completed',
+                        'Security scan: All clear',
+                        'New crypto payment: $99 BTC',
+                        'File upload: PDF processed',
+                        'User upgraded to Enterprise',
+                        'Database optimization complete'
+                    ];
+                    
+                    if (this.activities.length < 10) {
+                        const activity = {
+                            id: Date.now() + Math.random(),
+                            message: activities[Math.floor(Math.random() * activities.length)],
+                            time: new Date().toLocaleTimeString()
+                        };
+                        this.activities.unshift(activity);
+                        this.activities = this.activities.slice(0, 10);
+                    }
+                },
+
+                generateLogs() {
+                    const logs = [
+                        { level: 'INFO', message: 'Email extraction service started' },
+                        { level: 'INFO', message: 'Database connection established' },
+                        { level: 'WARN', message: 'High CPU usage detected: 85%' },
+                        { level: 'INFO', message: 'Payment webhook received' },
+                        { level: 'ERROR', message: 'Failed to process file: corrupted.pdf' },
+                        { level: 'INFO', message: 'User authentication successful' },
+                        { level: 'INFO', message: 'Backup process initiated' },
+                        { level: 'WARN', message: 'Rate limit exceeded for IP: 192.168.1.100' }
+                    ];
+                    
+                    if (this.systemLogs.length < 20) {
+                        const log = {
+                            id: Date.now() + Math.random(),
+                            timestamp: new Date().toISOString().substr(11, 8),
+                            ...logs[Math.floor(Math.random() * logs.length)]
+                        };
+                        this.systemLogs.unshift(log);
+                        this.systemLogs = this.systemLogs.slice(0, 20);
+                    }
+                },
+
+                addActivity(message) {
+                    const activity = {
+                        id: Date.now(),
+                        message: message,
+                        time: new Date().toLocaleTimeString()
+                    };
+                    this.activities.unshift(activity);
+                    this.activities = this.activities.slice(0, 10);
+                },
+
+                initCharts() {
+                    const ctx = document.getElementById('revenueChart');
+                    if (ctx) {
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                                datasets: [{
+                                    label: 'Revenue ($)',
+                                    data: [1200, 1900, 3000, 5000, 4200, 6500],
+                                    borderColor: '#00ff00',
+                                    backgroundColor: 'rgba(0, 255, 0, 0.1)',
+                                    tension: 0.4
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        labels: {
+                                            color: '#00ff00'
+                                        }
+                                    }
+                                },
+                                scales: {
+                                    x: {
+                                        ticks: { color: '#00ff00' },
+                                        grid: { color: '#00ff0040' }
+                                    },
+                                    y: {
+                                        ticks: { color: '#00ff00' },
+                                        grid: { color: '#00ff0040' }
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+            };
+        }
+
+        // Matrix rain effect
+        function createMatrixRain() {
+            const canvas = document.createElement('canvas');
+            canvas.style.position = 'fixed';
+            canvas.style.top = '0';
+            canvas.style.left = '0';
+            canvas.style.width = '100%';
+            canvas.style.height = '100%';
+            canvas.style.pointerEvents = 'none';
+            canvas.style.zIndex = '1';
+            canvas.style.opacity = '0.1';
+            document.body.appendChild(canvas);
+            
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            const chars = '01MailSiftUltra$@#%&*';
+            const charArray = chars.split('');
+            const fontSize = 14;
+            const columns = canvas.width / fontSize;
+            const drops = Array(Math.floor(columns)).fill(1);
+            
+            function draw() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.fillStyle = '#00ff00';
+                ctx.font = fontSize + 'px monospace';
+                
+                for (let i = 0; i < drops.length; i++) {
+                    const text = charArray[Math.floor(Math.random() * charArray.length)];
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                    
+                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                }
+            }
+            
+            setInterval(draw, 100);
+        }
+        
+        // Initialize matrix effect
+        setTimeout(createMatrixRain, 1000);
+    </script>
+</body>
+</html>

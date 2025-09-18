@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - MailSift PRO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-8">Dashboard</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Stats Cards -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-gray-500 text-sm">Total Extracted</h3>
+                <div class="text-3xl font-bold">{{ user[4] if user else 0 }}</div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-gray-500 text-sm">Current Plan</h3>
+                <div class="text-3xl font-bold">{{ user[2] if user else 'Free' }}</div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-gray-500 text-sm">Credits Remaining</h3>
+                <div class="text-3xl font-bold">{{ user[3] if user else 100 }}</div>
+            </div>
+        </div>
+
+        <!-- API Key Section -->
+        <div class="bg-white rounded-lg shadow p-6 mt-8">
+            <h2 class="text-xl font-bold mb-4">API Access</h2>
+            {% if user and user[2] != 'free' %}
+                <button onclick="generateKey()" class="bg-purple-600 text-white px-4 py-2 rounded">
+                    Generate API Key
+                </button>
+                <div id="api-key" class="mt-4 p-3 bg-gray-100 rounded font-mono hidden"></div>
+            {% else %}
+                <p>Upgrade to a paid plan to access the API</p>
+                <a href="/pricing" class="text-purple-600 hover:underline">View Plans →</a>
+            {% endif %}
+        </div>
+
+        <div class="mt-8">
+            <a href="/" class="text-purple-600 hover:underline">← Back to App</a>
+        </div>
+    </div>
+
+    <script>
+        async function generateKey() {
+            const response = await fetch('/api/generate-key', {method: 'POST'});
+            const data = await response.json();
+            
+            if (data.api_key) {
+                document.getElementById('api-key').textContent = data.api_key;
+                document.getElementById('api-key').classList.remove('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
+

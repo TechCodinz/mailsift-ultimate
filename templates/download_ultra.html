@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en" x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }" :class="{ 'dark': darkMode }">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download MailSift Ultra - All Platforms</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @keyframes gradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .gradient-animate { 
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab); 
+            background-size: 400% 400%; 
+            animation: gradient 15s ease infinite; 
+        }
+        .dark .gradient-animate { 
+            background: linear-gradient(-45deg, #1a1a2e, #16213e, #0f3460, #533483); 
+            background-size: 400% 400%; 
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+</head>
+<body class="gradient-animate min-h-screen">
+    <div class="container mx-auto px-4 py-12">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <button @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode)" 
+                    class="absolute top-4 right-4 p-2 rounded-lg hover:bg-white/20 transition">
+                <i class="fas" :class="darkMode ? 'fa-sun text-yellow-400' : 'fa-moon text-white'"></i>
+            </button>
+            
+            <h1 class="text-5xl font-bold text-white mb-4">
+                Download MailSift Ultra Desktop
+            </h1>
+            <p class="text-xl text-white/80">Get the power of MailSift on your desktop - Works offline!</p>
+        </div>
+
+        <!-- Download Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto mb-16">
+            <!-- Windows -->
+            <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-2xl p-8 text-center transform hover:scale-105 transition-all duration-300">
+                <i class="fab fa-windows text-6xl text-blue-500 mb-4"></i>
+                <h3 class="text-2xl font-bold mb-2 dark:text-white">Windows</h3>
+                <p class="text-gray-600 dark:text-gray-300 mb-4">Windows 10/11 (64-bit)</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Version 5.0.0 • 124 MB</p>
+                <a href="/download/windows" 
+                   class="w-full block bg-blue-500 text-white font-bold py-3 rounded-lg hover:bg-blue-600 transition">
+                    <i class="fas fa-download mr-2"></i>Download .exe
+                </a>
+                <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">SHA256: 7d865e89...</p>
+            </div>
+
+            <!-- macOS -->
+            <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-2xl p-8 text-center transform hover:scale-105 transition-all duration-300">
+                <i class="fab fa-apple text-6xl text-gray-800 dark:text-gray-300 mb-4"></i>
+                <h3 class="text-2xl font-bold mb-2 dark:text-white">macOS</h3>
+                <p class="text-gray-600 dark:text-gray-300 mb-4">macOS 11+ (Intel & M1)</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Version 5.0.0 • 118 MB</p>
+                <a href="/download/macos" 
+                   class="w-full block bg-gray-800 dark:bg-gray-700 text-white font-bold py-3 rounded-lg hover:bg-gray-900 dark:hover:bg-gray-600 transition">
+                    <i class="fas fa-download mr-2"></i>Download .dmg
+                </a>
+                <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">SHA256: 3f7a9b2c...</p>
+            </div>
+
+            <!-- Linux -->
+            <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-2xl p-8 text-center transform hover:scale-105 transition-all duration-300">
+                <i class="fab fa-linux text-6xl text-orange-500 mb-4"></i>
+                <h3 class="text-2xl font-bold mb-2 dark:text-white">Linux</h3>
+                <p class="text-gray-600 dark:text-gray-300 mb-4">Ubuntu, Debian, Fedora</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Version 5.0.0 • 115 MB</p>
+                <a href="/download/linux" 
+                   class="w-full block bg-orange-500 text-white font-bold py-3 rounded-lg hover:bg-orange-600 transition">
+                    <i class="fas fa-download mr-2"></i>Download .deb
+                </a>
+                <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">SHA256: 8a9b7c1d...</p>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-2xl p-8 max-w-4xl mx-auto mb-16">
+            <h2 class="text-2xl font-bold mb-6 text-center dark:text-white">Desktop App Features</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="flex items-start">
+                    <i class="fas fa-wifi-off text-green-500 mr-4 mt-1 text-xl"></i>
+                    <div>
+                        <h4 class="font-bold dark:text-white">Offline Mode</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Extract emails without internet connection</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <i class="fas fa-layer-group text-blue-500 mr-4 mt-1 text-xl"></i>
+                    <div>
+                        <h4 class="font-bold dark:text-white">Bulk Processing</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Process thousands of files at once</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <i class="fas fa-mouse-pointer text-purple-500 mr-4 mt-1 text-xl"></i>
+                    <div>
+                        <h4 class="font-bold dark:text-white">System Integration</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Right-click context menu & drag-drop</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <i class="fas fa-sync-alt text-orange-500 mr-4 mt-1 text-xl"></i>
+                    <div>
+                        <h4 class="font-bold dark:text-white">Auto Updates</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Always get the latest features</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <i class="fas fa-shield-alt text-red-500 mr-4 mt-1 text-xl"></i>
+                    <div>
+                        <h4 class="font-bold dark:text-white">Privacy First</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Your data never leaves your computer</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <i class="fas fa-rocket text-pink-500 mr-4 mt-1 text-xl"></i>
+                    <div>
+                        <h4 class="font-bold dark:text-white">Lightning Fast</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">10x faster than web version</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Requirements -->
+        <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-xl p-6 max-w-2xl mx-auto mb-8">
+            <h3 class="font-bold text-lg mb-4 text-center dark:text-white">System Requirements</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                <div>
+                    <i class="fas fa-memory text-blue-500 text-2xl mb-2"></i>
+                    <p class="font-semibold dark:text-white">RAM</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">4GB minimum</p>
+                </div>
+                <div>
+                    <i class="fas fa-hdd text-green-500 text-2xl mb-2"></i>
+                    <p class="font-semibold dark:text-white">Storage</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">500MB free space</p>
+                </div>
+                <div>
+                    <i class="fas fa-globe text-purple-500 text-2xl mb-2"></i>
+                    <p class="font-semibold dark:text-white">Internet</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">For activation only</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <a href="/" class="text-white hover:underline font-semibold text-lg">
+                <i class="fas fa-arrow-left mr-2"></i>Back to Web App
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Add download tracking
+        document.addEventListener('DOMContentLoaded', function() {
+            const downloadLinks = document.querySelectorAll('a[href^="/download/"]');
+            downloadLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    const platform = this.href.split('/').pop();
+                    // Track download
+                    fetch('/api/track-download', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({platform: platform})
+                    }).catch(() => {}); // Ignore errors
+                });
+            });
+        });
+    </script>
+</body>
+</html>

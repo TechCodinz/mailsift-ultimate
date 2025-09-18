@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download MailSift Desktop - All Platforms</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-purple-100 to-pink-100 min-h-screen">
+    <div class="container mx-auto px-4 py-12">
+        <div class="text-center mb-12">
+            <h1 class="text-5xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                Download MailSift Desktop
+            </h1>
+            <p class="text-xl text-gray-600">Get the power of MailSift on your desktop - Works offline!</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            <!-- Windows -->
+            <div class="bg-white rounded-xl shadow-xl p-8 text-center transform hover:scale-105 transition">
+                <i class="fab fa-windows text-6xl text-blue-500 mb-4"></i>
+                <h3 class="text-2xl font-bold mb-2">Windows</h3>
+                <p class="text-gray-600 mb-4">Windows 10/11 (64-bit)</p>
+                <p class="text-sm text-gray-500 mb-6">Version 5.0.0 • 124 MB</p>
+                <button onclick="downloadApp('windows')" 
+                        class="w-full bg-blue-500 text-white font-bold py-3 rounded-lg hover:bg-blue-600 transition">
+                    <i class="fas fa-download mr-2"></i>Download .exe
+                </button>
+                <p class="text-xs text-gray-400 mt-2">SHA256: 7d865e89...</p>
+            </div>
+
+            <!-- macOS -->
+            <div class="bg-white rounded-xl shadow-xl p-8 text-center transform hover:scale-105 transition">
+                <i class="fab fa-apple text-6xl text-gray-800 mb-4"></i>
+                <h3 class="text-2xl font-bold mb-2">macOS</h3>
+                <p class="text-gray-600 mb-4">macOS 11+ (Intel & M1)</p>
+                <p class="text-sm text-gray-500 mb-6">Version 5.0.0 • 118 MB</p>
+                <button onclick="downloadApp('macos')" 
+                        class="w-full bg-gray-800 text-white font-bold py-3 rounded-lg hover:bg-gray-900 transition">
+                    <i class="fas fa-download mr-2"></i>Download .dmg
+                </button>
+                <p class="text-xs text-gray-400 mt-2">SHA256: 3f7a9b2c...</p>
+            </div>
+
+            <!-- Linux -->
+            <div class="bg-white rounded-xl shadow-xl p-8 text-center transform hover:scale-105 transition">
+                <i class="fab fa-linux text-6xl text-orange-500 mb-4"></i>
+                <h3 class="text-2xl font-bold mb-2">Linux</h3>
+                <p class="text-gray-600 mb-4">Ubuntu, Debian, Fedora</p>
+                <p class="text-sm text-gray-500 mb-6">Version 5.0.0 • 115 MB</p>
+                <div class="space-y-2">
+                    <button onclick="downloadApp('linux-deb')" 
+                            class="w-full bg-orange-500 text-white font-bold py-2 rounded-lg hover:bg-orange-600 transition">
+                        <i class="fas fa-download mr-2"></i>.deb
+                    </button>
+                    <button onclick="downloadApp('linux-rpm')" 
+                            class="w-full bg-orange-500 text-white font-bold py-2 rounded-lg hover:bg-orange-600 transition">
+                        <i class="fas fa-download mr-2"></i>.rpm
+                    </button>
+                    <button onclick="downloadApp('linux-appimage')" 
+                            class="w-full bg-orange-500 text-white font-bold py-2 rounded-lg hover:bg-orange-600 transition">
+                        <i class="fas fa-download mr-2"></i>AppImage
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div class="mt-16 bg-white rounded-xl shadow-xl p-8 max-w-4xl mx-auto">
+            <h2 class="text-2xl font-bold mb-6 text-center">Desktop App Features</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex items-start">
+                    <i class="fas fa-check-circle text-green-500 mr-3 mt-1"></i>
+                    <div>
+                        <h4 class="font-bold">Offline Mode</h4>
+                        <p class="text-sm text-gray-600">Extract emails without internet connection</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <i class="fas fa-check-circle text-green-500 mr-3 mt-1"></i>
+                    <div>
+                        <h4 class="font-bold">Bulk Processing</h4>
+                        <p class="text-sm text-gray-600">Process thousands of files at once</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <i class="fas fa-check-circle text-green-500 mr-3 mt-1"></i>
+                    <div>
+                        <h4 class="font-bold">System Integration</h4>
+                        <p class="text-sm text-gray-600">Right-click context menu & drag-drop</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <i class="fas fa-check-circle text-green-500 mr-3 mt-1"></i>
+                    <div>
+                        <h4 class="font-bold">Auto Updates</h4>
+                        <p class="text-sm text-gray-600">Always get the latest features</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Requirements -->
+        <div class="mt-8 text-center text-gray-600">
+            <h3 class="font-bold mb-2">Minimum System Requirements</h3>
+            <p>4GB RAM • 500MB Disk Space • Internet for activation</p>
+        </div>
+
+        <div class="mt-8 text-center">
+            <a href="/" class="text-purple-600 hover:underline">← Back to Web App</a>
+        </div>
+    </div>
+
+    <script>
+        function downloadApp(platform) {
+            // In production, these would be real download links
+            const downloads = {
+                'windows': '/static/downloads/MailSift-Setup-5.0.0.exe',
+                'macos': '/static/downloads/MailSift-5.0.0.dmg',
+                'linux-deb': '/static/downloads/mailsift_5.0.0_amd64.deb',
+                'linux-rpm': '/static/downloads/mailsift-5.0.0.x86_64.rpm',
+                'linux-appimage': '/static/downloads/MailSift-5.0.0.AppImage'
+            };
+            
+            // For demo, show alert
+            alert(`Download will start for ${platform} version.\nIn production, this would download: ${downloads[platform]}`);
+            
+            // Track download
+            fetch('/api/track-download', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({platform: platform})
+            });
+        }
+    </script>
+</body>
+</html>

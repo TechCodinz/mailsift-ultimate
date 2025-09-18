@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing - MailSift Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-purple-50 to-pink-50 min-h-screen">
+    <div class="container mx-auto px-4 py-12">
+        <h1 class="text-5xl font-bold text-center mb-4 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            Choose Your Plan
+        </h1>
+        <p class="text-center text-gray-600 mb-12">Start free, upgrade anytime. Accept Card & Crypto payments!</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-7xl mx-auto">
+            {% for plan_key, plan in pricing.items() %}
+            <div class="bg-white rounded-2xl shadow-xl p-6 {% if plan_key == 'starter' %}border-4 border-purple-500 transform scale-105{% endif %} hover:shadow-2xl transition">
+                {% if plan_key == 'starter' %}
+                <div class="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm px-3 py-1 rounded-full inline-block mb-3">
+                    MOST POPULAR
+                </div>
+                {% endif %}
+                
+                <h2 class="text-2xl font-bold mb-2">{{ plan.name }}</h2>
+                <div class="text-4xl font-bold mb-4">
+                    {% if plan.price == 0 %}
+                    Free
+                    {% else %}
+                    ${{ plan.price }}<span class="text-sm text-gray-500">/month</span>
+                    {% endif %}
+                </div>
+                
+                <ul class="space-y-3 mb-6">
+                    {% for feature in plan.features %}
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                        <span>{{ feature }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                
+                {% if user.plan == plan_key %}
+                <button class="w-full bg-gray-300 text-gray-600 py-3 rounded-lg font-bold" disabled>
+                    Current Plan
+                </button>
+                {% elif plan_key == 'free' %}
+                <button class="w-full bg-gray-200 py-3 rounded-lg font-bold" disabled>
+                    Free Plan
+                </button>
+                {% else %}
+                <button onclick="showPaymentModal('{{ plan_key }}')" 
+                        class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-bold hover:opacity-90 transition">
+                    Get Started
+                </button>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Payment Methods -->
+        <div class="mt-16 text-center">
+            <h3 class="text-2xl font-bold mb-6">We Accept</h3>
+            <div class="flex justify-center space-x-8">
+                <div class="text-center">
+                    <i class="fab fa-cc-visa text-4xl text-blue-600"></i>
+                    <p class="text-sm mt-2">Visa</p>
+                </div>
+                <div class="text-center">
+                    <i class="fab fa-cc-mastercard text-4xl text-red-600"></i>
+                    <p class="text-sm mt-2">Mastercard</p>
+                </div>
+                <div class="text-center">
+                    <i class="fab fa-cc-stripe text-4xl text-purple-600"></i>
+                    <p class="text-sm mt-2">Stripe</p>
+                </div>
+                <div class="text-center">
+                    <i class="fab fa-bitcoin text-4xl text-orange-500"></i>
+                    <p class="text-sm mt-2">Bitcoin</p>
+                </div>
+                <div class="text-center">
+                    <i class="fab fa-ethereum text-4xl text-gray-700"></i>
+                    <p class="text-sm mt-2">Ethereum</p>
+                </div>
+                <div class="text-center">
+                    <i class="fas fa-dollar-sign text-4xl text-green-600"></i>
+                    <p class="text-sm mt-2">USDT</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-12 text-center">
+            <a href="/" class="text-purple-600 hover:underline font-semibold">
+                <i class="fas fa-arrow-left mr-2"></i>Back to App
+            </a>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4">
+            <h3 class="text-2xl font-bold mb-6">Choose Payment Method</h3>
+            
+            <!-- Payment Method Tabs -->
+            <div class="flex space-x-2 mb-6">
+                <button onclick="setPaymentMethod('card')" id="cardTab" 
+                        class="flex-1 py-2 px-4 bg-purple-600 text-white rounded-lg font-semibold">
+                    <i class="fas fa-credit-card mr-2"></i>Card
+                </button>
+                <button onclick="setPaymentMethod('crypto')" id="cryptoTab"
+                        class="flex-1 py-2 px-4 bg-gray-200 text-gray-700 rounded-lg font-semibold">
+                    <i class="fab fa-bitcoin mr-2"></i>Crypto
+                </button>
+            </div>
+
+            <!-- Card Payment -->
+            <div id="cardPayment">
+                <form id="payment-form">
+                    <input type="email" id="email" placeholder="Email address" 
+                           class="w-full p-3 border rounded-lg mb-4" required>
+                    <div id="card-element" class="p-3 border rounded-lg mb-4"></div>
+                    <button type="submit" class="w-full bg-purple-600 text-white py-3 rounded-lg font-bold hover:bg-purple-700">
+                        Pay Now
+                    </button>
+                </form>
+            </div>
+
+            <!-- Crypto Payment -->
+            <div id="cryptoPayment" class="hidden">
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                    <p class="text-sm text-yellow-800">Send payment to one of these addresses:</p>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <div class="font-bold text-sm">Bitcoin (BTC)</div>
+                        <div class="text-xs font-mono break-all">{{ crypto.btc }}</div>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <div class="font-bold text-sm">Ethereum (ETH)</div>
+                        <div class="text-xs font-mono break-all">{{ crypto.eth }}</div>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <div class="font-bold text-sm">USDT (TRC20)</div>
+                        <div class="text-xs font-mono break-all">{{ crypto.usdt }}</div>
+                    </div>
+                </div>
+
+                <input type="text" id="txid" placeholder="Transaction ID" 
+                       class="w-full p-3 border rounded-lg mt-4 mb-4">
+                
+                <button onclick="verifyCrypto()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700">
+                    Verify Payment
+                </button>
+            </div>
+
+            <button onclick="closeModal()" class="w-full mt-4 text-gray-600 hover:text-gray-800">
+                Cancel
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const stripe = Stripe('pk_test_51234567890'); // Add your key
+        let currentPlan = '';
+        let paymentMethod = 'card';
+        let paymentId = '';
+
+        function showPaymentModal(plan) {
+            currentPlan = plan;
+            document.getElementById('paymentModal').classList.remove('hidden');
+            
+            if (paymentMethod === 'card') {
+                setupStripe();
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('paymentModal').classList.add('hidden');
+        }
+
+        function setPaymentMethod(method) {
+            paymentMethod = method;
+            
+            if (method === 'card') {
+                document.getElementById('cardTab').className = 'flex-1 py-2 px-4 bg-purple-600 text-white rounded-lg font-semibold';
+                document.getElementById('cryptoTab').className = 'flex-1 py-2 px-4 bg-gray-200 text-gray-700 rounded-lg font-semibold';
+                document.getElementById('cardPayment').classList.remove('hidden');
+                document.getElementById('cryptoPayment').classList.add('hidden');
+                setupStripe();
+            } else {
+                document.getElementById('cryptoTab').className = 'flex-1 py-2 px-4 bg-purple-600 text-white rounded-lg font-semibold';
+                document.getElementById('cardTab').className = 'flex-1 py-2 px-4 bg-gray-200 text-gray-700 rounded-lg font-semibold';
+                document.getElementById('cryptoPayment').classList.remove('hidden');
+                document.getElementById('cardPayment').classList.add('hidden');
+                setupCrypto();
+            }
+        }
+
+        function setupStripe() {
+            const elements = stripe.elements();
+            const cardElement = elements.create('card');
+            cardElement.mount('#card-element');
+            
+            document.getElementById('payment-form').onsubmit = async (e) => {
+                e.preventDefault();
+                
+                const email = document.getElementById('email').value;
+                
+                const response = await fetch('/api/subscribe', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        plan: currentPlan,
+                        email: email,
+                        payment_method: 'stripe'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                const result = await stripe.confirmCardPayment(data.client_secret, {
+                    payment_method: {
+                        card: cardElement,
+                        billing_details: {email: email}
+                    }
+                });
+                
+                if (result.error) {
+                    alert(result.error.message);
+                } else {
+                    alert('Payment successful! Your plan has been upgraded.');
+                    window.location.href = '/';
+                }
+            };
+        }
+
+        async function setupCrypto() {
+            const response = await fetch('/api/subscribe', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    plan: currentPlan,
+                    payment_method: 'crypto'
+                })
+            });
+            
+            const data = await response.json();
+            paymentId = data.payment_id;
+        }
+
+        async function verifyCrypto() {
+            const txid = document.getElementById('txid').value;
+            
+            const response = await fetch('/api/verify-crypto', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    payment_id: paymentId,
+                    txid: txid
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                alert('Payment verified! Your plan has been upgraded.');
+                window.location.href = '/';
+            } else {
+                alert('Payment verification failed. Please check your transaction ID.');
+            }
+        }
+    </script>
+</body>
+</html>

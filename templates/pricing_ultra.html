@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en" x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }" :class="{ 'dark': darkMode }">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing - MailSift Ultra</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @keyframes gradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .gradient-animate { 
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab); 
+            background-size: 400% 400%; 
+            animation: gradient 15s ease infinite; 
+        }
+        .dark .gradient-animate { 
+            background: linear-gradient(-45deg, #1a1a2e, #16213e, #0f3460, #533483); 
+            background-size: 400% 400%; 
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+</head>
+<body class="gradient-animate min-h-screen" x-data="pricingApp()">
+    <div class="container mx-auto px-4 py-12">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <div class="flex justify-center items-center mb-4">
+                <button @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode)" 
+                        class="absolute top-4 right-4 p-2 rounded-lg hover:bg-white/20 transition">
+                    <i class="fas" :class="darkMode ? 'fa-sun text-yellow-400' : 'fa-moon text-white'"></i>
+                </button>
+            </div>
+            <h1 class="text-5xl font-bold text-white mb-4">Choose Your Plan</h1>
+            <p class="text-xl text-white/80">Start free, upgrade anytime. Accept Card & Crypto payments!</p>
+        </div>
+        
+        <!-- Pricing Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
+            <!-- Free Plan -->
+            <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-2xl p-8 transition-all duration-300">
+                <h2 class="text-2xl font-bold mb-4 dark:text-white">Free</h2>
+                <div class="text-4xl font-bold mb-6 dark:text-white">$0<span class="text-sm text-gray-500">/month</span></div>
+                <ul class="space-y-3 mb-8">
+                    <li class="flex items-start dark:text-gray-300">
+                        <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                        <span>100 Email Credits</span>
+                    </li>
+                    <li class="flex items-start dark:text-gray-300">
+                        <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                        <span>Basic AI Extraction</span>
+                    </li>
+                    <li class="flex items-start dark:text-gray-300">
+                        <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                        <span>CSV Export</span>
+                    </li>
+                    <li class="flex items-start text-gray-400">
+                        <i class="fas fa-times mr-3 mt-1"></i>
+                        <span>API Access</span>
+                    </li>
+                </ul>
+                <button class="w-full bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-400 py-3 rounded-lg font-bold" disabled>
+                    Current Plan
+                </button>
+            </div>
+
+            <!-- Pro Plan -->
+            <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border-4 border-purple-500 transform scale-105 transition-all duration-300">
+                <div class="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm px-3 py-1 rounded-full inline-block mb-4">
+                    MOST POPULAR
+                </div>
+                <h2 class="text-2xl font-bold mb-4 dark:text-white">Pro</h2>
+                <div class="text-4xl font-bold mb-6 dark:text-white">$29<span class="text-sm text-gray-500">/month</span></div>
+                <ul class="space-y-3 mb-8">
+                    <li class="flex items-start dark:text-gray-300">
+                        <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                        <span>1,000 Email Credits</span>
+                    </li>
+                    <li class="flex items-start dark:text-gray-300">
+                        <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                        <span>Advanced AI Analysis</span>
+                    </li>
+                    <li class="flex items-start dark:text-gray-300">
+                        <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                        <span>All Export Formats</span>
+                    </li>
+                    <li class="flex items-start dark:text-gray-300">
+                        <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                        <span>API Access</span>
+                    </li>
+                </ul>
+                <button @click="showPaymentModal('pro')" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-bold hover:opacity-90 transition">
+                    Get Started
+                </button>
+            </div>
+
+            <!-- Enterprise Plan -->
+            <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-2xl p-8 transition-all duration-300">
+                <h2 class="text-2xl font-bold mb-4 dark:text-white">Enterprise</h2>
+                <div class="text-4xl font-bold mb-6 dark:text-white">$99<span class="text-sm text-gray-500">/month</span></div>
+                <ul class="space-y-3 mb-8">
+                    <li class="flex items-start dark:text-gray-300">
+                        <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                        <span>Unlimited Credits</span>
+                    </li>
+                    <li class="flex items-start dark:text-gray-300">
+                        <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                        <span>Priority Support</span>
+                    </li>
+                    <li class="flex items-start dark:text-gray-300">
+                        <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                        <span>Custom Integration</span>
+                    </li>
+                    <li class="flex items-start dark:text-gray-300">
+                        <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                        <span>Dedicated Account Manager</span>
+                    </li>
+                </ul>
+                <button @click="showPaymentModal('enterprise')" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-bold hover:opacity-90 transition">
+                    Contact Sales
+                </button>
+            </div>
+        </div>
+
+        <!-- Payment Methods -->
+        <div class="text-center mb-16">
+            <h3 class="text-2xl font-bold text-white mb-8">We Accept Multiple Payment Methods</h3>
+            <div class="flex justify-center space-x-8 flex-wrap">
+                <div class="text-center mb-4">
+                    <i class="fab fa-cc-visa text-4xl text-blue-600 mb-2"></i>
+                    <p class="text-white text-sm">Visa</p>
+                </div>
+                <div class="text-center mb-4">
+                    <i class="fab fa-cc-mastercard text-4xl text-red-600 mb-2"></i>
+                    <p class="text-white text-sm">Mastercard</p>
+                </div>
+                <div class="text-center mb-4">
+                    <i class="fab fa-bitcoin text-4xl text-orange-500 mb-2"></i>
+                    <p class="text-white text-sm">Bitcoin</p>
+                </div>
+                <div class="text-center mb-4">
+                    <i class="fab fa-ethereum text-4xl text-blue-400 mb-2"></i>
+                    <p class="text-white text-sm">Ethereum</p>
+                </div>
+                <div class="text-center mb-4">
+                    <i class="fas fa-coins text-4xl text-green-500 mb-2"></i>
+                    <p class="text-white text-sm">USDT</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <a href="/" class="text-white hover:underline font-semibold text-lg">
+                <i class="fas fa-arrow-left mr-2"></i>Back to App
+            </a>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div x-show="showModal" x-transition class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-6 dark:text-white">Choose Payment Method</h3>
+            
+            <!-- Payment Method Tabs -->
+            <div class="flex space-x-2 mb-6">
+                <button @click="paymentMethod = 'card'" :class="paymentMethod === 'card' ? 'bg-purple-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
+                        class="flex-1 py-2 px-4 rounded-lg font-semibold transition">
+                    <i class="fas fa-credit-card mr-2"></i>Card
+                </button>
+                <button @click="paymentMethod = 'crypto'" :class="paymentMethod === 'crypto' ? 'bg-purple-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
+                        class="flex-1 py-2 px-4 rounded-lg font-semibold transition">
+                    <i class="fab fa-bitcoin mr-2"></i>Crypto
+                </button>
+            </div>
+
+            <!-- Card Payment -->
+            <div x-show="paymentMethod === 'card'" x-transition>
+                <form @submit.prevent="processCardPayment()">
+                    <input type="email" x-model="email" placeholder="Email address" 
+                           class="w-full p-3 border dark:border-gray-600 rounded-lg mb-4 dark:bg-gray-900 dark:text-white" required>
+                    <div class="p-3 border dark:border-gray-600 rounded-lg mb-4 bg-gray-50 dark:bg-gray-900 text-center text-gray-500">
+                        Card details would appear here
+                    </div>
+                    <button type="submit" class="w-full bg-purple-600 text-white py-3 rounded-lg font-bold hover:bg-purple-700 transition">
+                        Pay $<span x-text="selectedPlan === 'pro' ? '29' : '99'"></span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Crypto Payment -->
+            <div x-show="paymentMethod === 'crypto'" x-transition>
+                <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4 mb-4">
+                    <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        Send payment to one of these addresses and provide transaction ID:
+                    </p>
+                </div>
+                
+                <div class="space-y-4 mb-4">
+                    <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="font-bold text-sm dark:text-white">Bitcoin (BTC)</div>
+                            <button @click="copyAddress('btc')" class="text-purple-600 hover:text-purple-700">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                        <div class="text-xs font-mono break-all text-gray-600 dark:text-gray-400" id="btc-address">
+                            1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">Amount: $<span x-text="selectedPlan === 'pro' ? '29' : '99'"></span> USD</div>
+                    </div>
+                    
+                    <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="font-bold text-sm dark:text-white">Ethereum (ETH)</div>
+                            <button @click="copyAddress('eth')" class="text-purple-600 hover:text-purple-700">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                        <div class="text-xs font-mono break-all text-gray-600 dark:text-gray-400" id="eth-address">
+                            0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">Amount: $<span x-text="selectedPlan === 'pro' ? '29' : '99'"></span> USD</div>
+                    </div>
+                    
+                    <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="font-bold text-sm dark:text-white">USDT (TRC20)</div>
+                            <button @click="copyAddress('usdt')" class="text-purple-600 hover:text-purple-700">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                        <div class="text-xs font-mono break-all text-gray-600 dark:text-gray-400" id="usdt-address">
+                            TYDzsYUEpvnYmQk4zGP9sWWcTEd2MiAtW6
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">Amount: $<span x-text="selectedPlan === 'pro' ? '29' : '99'"></span> USD</div>
+                    </div>
+                </div>
+
+                <input type="text" x-model="txid" placeholder="Transaction ID (after payment)" 
+                       class="w-full p-3 border dark:border-gray-600 rounded-lg mb-4 dark:bg-gray-900 dark:text-white">
+                
+                <button @click="verifyCryptoPayment()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition">
+                    <i class="fas fa-shield-alt mr-2"></i>Verify Payment
+                </button>
+                
+                <div class="mt-4 text-center">
+                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                        <i class="fas fa-clock mr-1"></i>
+                        Payments are usually confirmed within 10-30 minutes
+                    </p>
+                </div>
+            </div>
+
+            <button @click="closeModal()" class="w-full mt-4 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition">
+                Cancel
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function pricingApp() {
+            return {
+                showModal: false,
+                selectedPlan: '',
+                paymentMethod: 'card',
+                email: '',
+                txid: '',
+
+                showPaymentModal(plan) {
+                    this.selectedPlan = plan;
+                    this.showModal = true;
+                },
+
+                closeModal() {
+                    this.showModal = false;
+                    this.email = '';
+                    this.txid = '';
+                },
+
+                async processCardPayment() {
+                    alert('Card payment demo - In production this would integrate with Stripe');
+                    this.closeModal();
+                },
+
+                async verifyCryptoPayment() {
+                    if (!this.txid) {
+                        alert('Please enter your transaction ID');
+                        return;
+                    }
+                    
+                    alert(`Crypto payment verification demo\nPlan: ${this.selectedPlan}\nTXID: ${this.txid}\n\nIn production, this would verify the transaction on the blockchain and upgrade your account.`);
+                    this.closeModal();
+                },
+
+                copyAddress(crypto) {
+                    const addresses = {
+                        btc: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
+                        eth: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1',
+                        usdt: 'TYDzsYUEpvnYmQk4zGP9sWWcTEd2MiAtW6'
+                    };
+                    
+                    navigator.clipboard.writeText(addresses[crypto]).then(() => {
+                        alert(`${crypto.toUpperCase()} address copied to clipboard!`);
+                    });
+                }
+            };
+        }
+    </script>
+</body>
+</html>

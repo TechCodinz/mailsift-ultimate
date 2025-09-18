@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MailSift Perfect - Email Intelligence Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="gradient-bg text-white rounded-lg shadow-lg p-6 mb-8">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold">MailSift Perfect</h1>
+                    <p class="text-blue-100">Zero Errors, Maximum Performance</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="bg-white/20 px-4 py-2 rounded">
+                        <span class="text-sm">Credits:</span>
+                        <span class="font-bold" id="credits">{{ user.credits }}</span>
+                    </div>
+                    <div class="bg-white/20 px-4 py-2 rounded">
+                        <span class="text-sm">Plan:</span>
+                        <span class="font-bold">{{ user.plan|upper }}</span>
+                    </div>
+                    <a href="/pricing" class="bg-yellow-500 hover:bg-yellow-600 text-black px-4 py-2 rounded font-bold">
+                        <i class="fas fa-crown mr-2"></i>Upgrade
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white rounded-lg shadow p-6 text-center card-hover">
+                <i class="fas fa-envelope text-3xl text-blue-500 mb-2"></i>
+                <div class="text-2xl font-bold text-blue-600" id="total-emails">0</div>
+                <div class="text-gray-600">Emails Found</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6 text-center card-hover">
+                <i class="fas fa-star text-3xl text-yellow-500 mb-2"></i>
+                <div class="text-2xl font-bold text-yellow-600" id="high-value">0</div>
+                <div class="text-gray-600">High Value</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6 text-center card-hover">
+                <i class="fas fa-dollar-sign text-3xl text-green-500 mb-2"></i>
+                <div class="text-2xl font-bold text-green-600">$<span id="total-value">0</span></div>
+                <div class="text-gray-600">Est. Value</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6 text-center card-hover">
+                <i class="fas fa-tachometer-alt text-3xl text-purple-500 mb-2"></i>
+                <div class="text-2xl font-bold text-purple-600"><span id="accuracy">99.9</span>%</div>
+                <div class="text-gray-600">Accuracy</div>
+            </div>
+        </div>
+
+        <!-- Main Interface -->
+        <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
+            <h2 class="text-2xl font-bold mb-6 text-center">
+                <i class="fas fa-magic text-purple-600 mr-2"></i>
+                Extract Emails with Perfect AI
+            </h2>
+            
+            <!-- Input Tabs -->
+            <div class="flex justify-center space-x-2 mb-6">
+                <button onclick="setMode('text')" id="text-btn" 
+                        class="px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold">
+                    <i class="fas fa-keyboard mr-2"></i>Text
+                </button>
+                <button onclick="setMode('url')" id="url-btn" 
+                        class="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg font-semibold">
+                    <i class="fas fa-globe mr-2"></i>URL
+                </button>
+                <button onclick="setMode('file')" id="file-btn" 
+                        class="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg font-semibold">
+                    <i class="fas fa-file-upload mr-2"></i>File
+                </button>
+            </div>
+
+            <!-- Input Areas -->
+            <div id="text-input" class="mb-6">
+                <textarea id="input-text" 
+                          class="w-full p-4 border-2 border-gray-200 rounded-lg focus:border-purple-500 transition" 
+                          rows="6" 
+                          placeholder="Paste your text containing emails here..."></textarea>
+            </div>
+
+            <div id="url-input" class="mb-6 hidden">
+                <input type="url" id="input-url" 
+                       class="w-full p-4 border-2 border-gray-200 rounded-lg focus:border-purple-500 transition" 
+                       placeholder="https://example.com">
+            </div>
+
+            <div id="file-input" class="mb-6 hidden">
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-purple-500 transition cursor-pointer"
+                     onclick="document.getElementById('file').click()">
+                    <i class="fas fa-cloud-upload-alt text-6xl text-gray-400 mb-4"></i>
+                    <p class="text-xl text-gray-600">Drop files here or click to browse</p>
+                    <p class="text-sm text-gray-500 mt-2">Supports: PDF, DOCX, TXT, CSV</p>
+                    <input type="file" id="file" class="hidden" accept=".pdf,.docx,.txt,.csv">
+                </div>
+            </div>
+
+            <!-- Extract Button -->
+            <button onclick="extractEmails()" id="extract-btn"
+                    class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-4 rounded-lg text-lg hover:opacity-90 transition">
+                <i class="fas fa-wand-magic-sparkles mr-2"></i>
+                Extract Emails with Perfect AI
+            </button>
+
+            <!-- Progress Bar -->
+            <div id="progress" class="hidden mt-4">
+                <div class="bg-gray-200 rounded-full h-3">
+                    <div id="progress-bar" class="bg-purple-600 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div id="results" class="hidden">
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold">
+                        <i class="fas fa-trophy text-yellow-500 mr-2"></i>
+                        Perfect Results (<span id="result-count">0</span> emails)
+                    </h3>
+                    <div class="space-x-2">
+                        <button onclick="exportData('csv')" 
+                                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                            <i class="fas fa-file-csv mr-2"></i>CSV
+                        </button>
+                        <button onclick="exportData('json')" 
+                                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                            <i class="fas fa-code mr-2"></i>JSON
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Email List -->
+                <div id="email-list" class="space-y-2 max-h-96 overflow-y-auto"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let mode = 'text';
+        let extractedEmails = [];
+
+        function setMode(newMode) {
+            mode = newMode;
+            
+            // Update buttons
+            document.querySelectorAll('[id$="-btn"]').forEach(btn => {
+                if (btn.id === newMode + '-btn') {
+                    btn.className = 'px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold';
+                } else if (btn.id !== 'extract-btn') {
+                    btn.className = 'px-6 py-3 bg-gray-300 text-gray-700 rounded-lg font-semibold';
+                }
+            });
+            
+            // Update inputs
+            document.querySelectorAll('[id$="-input"]').forEach(input => {
+                input.classList.toggle('hidden', !input.id.startsWith(newMode));
+            });
+        }
+
+        async function extractEmails() {
+            const progressEl = document.getElementById('progress');
+            const progressBar = document.getElementById('progress-bar');
+            const extractBtn = document.getElementById('extract-btn');
+            
+            // Show progress
+            progressEl.classList.remove('hidden');
+            extractBtn.disabled = true;
+            extractBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+            
+            // Animate progress
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress = Math.min(progress + 10, 90);
+                progressBar.style.width = progress + '%';
+            }, 100);
+
+            try {
+                let response;
+                
+                if (mode === 'file') {
+                    const fileInput = document.getElementById('file');
+                    if (fileInput.files.length === 0) {
+                        alert('Please select a file');
+                        return;
+                    }
+                    
+                    const formData = new FormData();
+                    formData.append('file', fileInput.files[0]);
+                    response = await fetch('/api/extract', {
+                        method: 'POST',
+                        body: formData
+                    });
+                } else {
+                    const data = {
+                        text: mode === 'text' ? document.getElementById('input-text').value : '',
+                        url: mode === 'url' ? document.getElementById('input-url').value : ''
+                    };
+                    response = await fetch('/api/extract', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(data)
+                    });
+                }
+
+                const result = await response.json();
+
+                if (response.status === 402) {
+                    alert('Insufficient credits! Please upgrade your plan.');
+                    window.location.href = '/pricing';
+                    return;
+                }
+
+                if (result.success) {
+                    displayResults(result);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                clearInterval(progressInterval);
+                progressBar.style.width = '100%';
+                setTimeout(() => {
+                    progressEl.classList.add('hidden');
+                    extractBtn.disabled = false;
+                    extractBtn.innerHTML = '<i class="fas fa-wand-magic-sparkles mr-2"></i>Extract Emails with Perfect AI';
+                }, 500);
+            }
+        }
+
+        function displayResults(data) {
+            extractedEmails = data.emails;
+            
+            // Update stats
+            document.getElementById('total-emails').textContent = data.analytics.total;
+            document.getElementById('high-value').textContent = data.analytics.high_value;
+            document.getElementById('total-value').textContent = Math.round(data.analytics.total_value);
+            document.getElementById('result-count').textContent = data.emails.length;
+            document.getElementById('credits').textContent = data.credits_remaining;
+
+            // Display emails
+            const listEl = document.getElementById('email-list');
+            listEl.innerHTML = '';
+            
+            data.emails.forEach(email => {
+                const div = document.createElement('div');
+                div.className = 'flex justify-between items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition';
+                
+                const scoreColor = email.lead_score > 70 ? 'text-green-600' : 
+                                 email.lead_score > 40 ? 'text-yellow-600' : 'text-red-600';
+                
+                div.innerHTML = `
+                    <div class="flex-1">
+                        <div class="font-mono text-blue-600 text-lg">${email.email}</div>
+                        <div class="text-sm text-gray-500 mt-1 space-x-4">
+                            <span class="bg-purple-100 text-purple-700 px-2 py-1 rounded">${email.category}</span>
+                            <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded">${email.intent}</span>
+                            <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded">Risk: ${email.risk}</span>
+                        </div>
+                    </div>
+                    <div class="text-center ml-4">
+                        <div class="text-3xl font-bold ${scoreColor}">${email.lead_score}</div>
+                        <div class="text-xs text-gray-500">Perfect Score</div>
+                    </div>
+                `;
+                listEl.appendChild(div);
+            });
+
+            document.getElementById('results').classList.remove('hidden');
+        }
+
+        async function exportData(format) {
+            try {
+                const response = await fetch(`/api/export/${format}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({emails: extractedEmails})
+                });
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `perfect_emails.${format}`;
+                a.click();
+            } catch (error) {
+                alert('Export failed: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

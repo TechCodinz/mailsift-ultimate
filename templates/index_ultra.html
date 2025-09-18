@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en" x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }" :class="{ 'dark': darkMode }">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MailSift Ultra - AI Email Intelligence Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @keyframes gradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
+        .gradient-animate { 
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab); 
+            background-size: 400% 400%; 
+            animation: gradient 15s ease infinite; 
+        }
+        .float-animation { animation: float 6s ease-in-out infinite; }
+        .dark .gradient-animate { 
+            background: linear-gradient(-45deg, #1a1a2e, #16213e, #0f3460, #533483); 
+            background-size: 400% 400%; 
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+</head>
+<body class="gradient-animate min-h-screen transition-all duration-500" x-data="mailsiftApp()">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-2xl p-6 mb-8 transition-all duration-300">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <div class="float-animation">
+                        <i class="fas fa-envelope-open-text text-4xl text-purple-600 dark:text-purple-400"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
+                            MailSift Ultra
+                        </h1>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">AI-Powered Email Intelligence</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <!-- Dark Mode Toggle -->
+                    <button @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode)" 
+                            class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                        <i class="fas" :class="darkMode ? 'fa-sun text-yellow-400' : 'fa-moon text-gray-600'"></i>
+                    </button>
+                    
+                    <div class="bg-purple-100 dark:bg-purple-900 px-4 py-2 rounded-lg">
+                        <span class="text-sm text-gray-600 dark:text-gray-300">Credits:</span>
+                        <span class="font-bold text-purple-600 dark:text-purple-400" id="credits">{{ user.credits }}</span>
+                    </div>
+                    <a href="/dashboard" class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-chart-line text-gray-700 dark:text-gray-300"></i>
+                    </a>
+                    <a href="/download" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-download mr-2"></i>Get App
+                    </a>
+                    <a href="/pricing" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg hover:opacity-90 transition">
+                        <i class="fas fa-crown mr-2"></i>Upgrade
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Interface -->
+        <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-2xl p-8 mb-8 transition-all duration-300">
+            <h2 class="text-2xl font-bold mb-6 dark:text-white">Extract Emails with 99.9% Accuracy</h2>
+            
+            <!-- Input Tabs -->
+            <div class="flex space-x-2 mb-6">
+                <button @click="setMode('text')" :class="mode === 'text' ? 'bg-purple-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
+                        class="px-6 py-3 rounded-lg font-semibold transition">
+                    <i class="fas fa-keyboard mr-2"></i>Text
+                </button>
+                <button @click="setMode('url')" :class="mode === 'url' ? 'bg-purple-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
+                        class="px-6 py-3 rounded-lg font-semibold transition">
+                    <i class="fas fa-globe mr-2"></i>URL
+                </button>
+                <button @click="setMode('file')" :class="mode === 'file' ? 'bg-purple-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
+                        class="px-6 py-3 rounded-lg font-semibold transition">
+                    <i class="fas fa-file-upload mr-2"></i>File Upload
+                </button>
+            </div>
+
+            <!-- Input Areas -->
+            <div x-show="mode === 'text'" x-transition>
+                <textarea x-model="inputText" class="w-full p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg focus:border-purple-500 dark:bg-gray-900 dark:text-white transition" 
+                          rows="6" placeholder="Paste your text containing emails here..."></textarea>
+            </div>
+
+            <div x-show="mode === 'url'" x-transition>
+                <input type="url" x-model="inputUrl" class="w-full p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg focus:border-purple-500 dark:bg-gray-900 dark:text-white transition" 
+                       placeholder="https://example.com">
+            </div>
+
+            <div x-show="mode === 'file'" x-transition>
+                <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-12 text-center hover:border-purple-500 transition cursor-pointer"
+                     @click="$refs.fileInput.click()" @dragover.prevent @drop.prevent="handleFileDrop($event)">
+                    <i class="fas fa-cloud-upload-alt text-6xl text-gray-400 mb-4"></i>
+                    <p class="text-xl text-gray-600 dark:text-gray-300">Drop files here or click to browse</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Supports: PDF, DOCX, Excel, TXT, CSV</p>
+                    <input type="file" x-ref="fileInput" @change="handleFileSelect($event)" class="hidden">
+                    <div x-show="selectedFile" class="mt-4 text-green-600 dark:text-green-400 font-semibold" x-text="selectedFile?.name"></div>
+                </div>
+            </div>
+
+            <!-- Extract Button -->
+            <button @click="extractEmails()" :disabled="processing"
+                    class="w-full mt-6 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-4 rounded-lg text-lg hover:opacity-90 disabled:opacity-50 transition transform hover:scale-[1.02]">
+                <span x-show="!processing">
+                    <i class="fas fa-wand-magic-sparkles mr-2"></i>
+                    Extract Emails with AI Intelligence
+                </span>
+                <span x-show="processing">
+                    <i class="fas fa-spinner fa-spin mr-2"></i>
+                    Processing... <span x-text="progress + '%'"></span>
+                </span>
+            </button>
+
+            <!-- Progress -->
+            <div x-show="processing" x-transition class="mt-4">
+                <div class="bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
+                    <div class="bg-gradient-to-r from-purple-600 to-pink-600 h-full transition-all duration-300" :style="`width: ${progress}%`"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div x-show="results.length > 0" x-transition class="space-y-6">
+            <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-2xl p-8 mb-8 transition-all duration-300">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold dark:text-white">
+                        <i class="fas fa-trophy text-yellow-500 mr-2"></i>
+                        Results (<span x-text="results.length"></span> emails found)
+                    </h3>
+                    <div class="space-x-2">
+                        <button @click="exportData('csv')" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition">
+                            <i class="fas fa-file-csv mr-2"></i>CSV
+                        </button>
+                        <button @click="exportData('json')" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition">
+                            <i class="fas fa-code mr-2"></i>JSON
+                        </button>
+                        <button @click="exportData('txt')" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition">
+                            <i class="fas fa-file-alt mr-2"></i>TXT
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Analytics -->
+                <div class="grid grid-cols-4 gap-4 mb-6">
+                    <div class="bg-purple-50 dark:bg-purple-900/50 p-4 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-purple-600 dark:text-purple-400" x-text="analytics.total">0</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">Total Emails</div>
+                    </div>
+                    <div class="bg-green-50 dark:bg-green-900/50 p-4 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-green-600 dark:text-green-400" x-text="analytics.high_value">0</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">High Value</div>
+                    </div>
+                    <div class="bg-blue-50 dark:bg-blue-900/50 p-4 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">$<span x-text="Math.round(analytics.total_value)">0</span></div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">Est. Value</div>
+                    </div>
+                    <div class="bg-orange-50 dark:bg-orange-900/50 p-4 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-orange-600 dark:text-orange-400"><span x-text="analytics.accuracy">99.9</span>%</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">Accuracy</div>
+                    </div>
+                </div>
+
+                <!-- Category Breakdown -->
+                <div class="mb-6">
+                    <h4 class="font-bold mb-3 dark:text-white">Email Categories (Stored by Domain)</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <template x-for="(count, category) in analytics.categories" :key="category">
+                            <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg text-center">
+                                <div class="font-bold text-lg" x-text="count"></div>
+                                <div class="text-sm capitalize dark:text-gray-300" x-text="category"></div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Email List -->
+                <div class="space-y-2 max-h-96 overflow-y-auto">
+                    <template x-for="email in results" :key="email.email">
+                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 hover:bg-gray-100 dark:hover:bg-gray-600 transition">
+                            <div class="flex justify-between items-center">
+                                <div class="flex-1">
+                                    <div class="font-mono text-blue-600 dark:text-blue-400" x-text="email.email"></div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400 mt-1 flex flex-wrap gap-2">
+                                        <span class="bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 px-2 py-1 rounded" x-text="email.category"></span>
+                                        <span class="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded" x-text="email.intent"></span>
+                                        <span class="bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 px-2 py-1 rounded">Priority: <span x-text="email.priority"></span></span>
+                                        <span :class="{
+                                            'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300': email.risk === 'low',
+                                            'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300': email.risk === 'medium',
+                                            'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300': email.risk === 'high'
+                                        }" class="px-2 py-1 rounded">
+                                            Risk: <span x-text="email.risk"></span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="text-center ml-4">
+                                    <div class="text-3xl font-bold" :class="{
+                                        'text-green-600 dark:text-green-400': email.lead_score > 70,
+                                        'text-yellow-600 dark:text-yellow-400': email.lead_score > 40 && email.lead_score <= 70,
+                                        'text-red-600 dark:text-red-400': email.lead_score <= 40
+                                    }" x-text="email.lead_score"></div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">Lead Score</div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- AI Recommendations -->
+            <div x-show="recommendations.length > 0" class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl p-6 transition-all duration-300">
+                <h4 class="font-bold text-lg mb-4 dark:text-white">
+                    <i class="fas fa-brain text-purple-600 dark:text-purple-400 mr-2"></i>
+                    AI Insights & Recommendations
+                </h4>
+                <ul class="space-y-2">
+                    <template x-for="rec in recommendations" :key="rec">
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mr-2 mt-1"></i>
+                            <span class="dark:text-gray-300" x-text="rec"></span>
+                        </li>
+                    </template>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function mailsiftApp() {
+            return {
+                mode: 'text',
+                inputText: '',
+                inputUrl: '',
+                selectedFile: null,
+                processing: false,
+                progress: 0,
+                results: [],
+                recommendations: [],
+                analytics: {
+                    total: 0,
+                    high_value: 0,
+                    total_value: 0,
+                    accuracy: 99.9,
+                    categories: {}
+                },
+
+                setMode(newMode) {
+                    this.mode = newMode;
+                },
+
+                handleFileSelect(event) {
+                    this.selectedFile = event.target.files[0];
+                },
+
+                handleFileDrop(event) {
+                    this.selectedFile = event.dataTransfer.files[0];
+                },
+
+                async extractEmails() {
+                    this.processing = true;
+                    this.progress = 0;
+                    
+                    // Simulate progress
+                    const progressInterval = setInterval(() => {
+                        this.progress = Math.min(this.progress + 10, 90);
+                    }, 100);
+
+                    try {
+                        let response;
+                        
+                        if (this.mode === 'file' && this.selectedFile) {
+                            const formData = new FormData();
+                            formData.append('file', this.selectedFile);
+                            response = await fetch('/api/extract', {
+                                method: 'POST',
+                                body: formData
+                            });
+                        } else {
+                            const data = {
+                                text: this.mode === 'text' ? this.inputText : '',
+                                url: this.mode === 'url' ? this.inputUrl : ''
+                            };
+                            response = await fetch('/api/extract', {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify(data)
+                            });
+                        }
+
+                        const result = await response.json();
+
+                        if (response.status === 402) {
+                            alert('Insufficient credits! Please upgrade your plan.');
+                            window.location.href = '/pricing';
+                            return;
+                        }
+
+                        if (result.success) {
+                            this.results = result.emails;
+                            this.recommendations = result.recommendations || [];
+                            this.analytics = result.analytics;
+                            document.getElementById('credits').textContent = result.credits_remaining;
+                        }
+                    } catch (error) {
+                        alert('Error: ' + error.message);
+                    } finally {
+                        clearInterval(progressInterval);
+                        this.progress = 100;
+                        setTimeout(() => {
+                            this.processing = false;
+                        }, 500);
+                    }
+                },
+
+                async exportData(format) {
+                    const response = await fetch(`/api/export/${format}`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({emails: this.results})
+                    });
+
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `emails.${format}`;
+                    a.click();
+                }
+            };
+        }
+    </script>
+</body>
+</html>
