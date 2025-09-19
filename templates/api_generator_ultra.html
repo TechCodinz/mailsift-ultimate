@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MailSift Ultra - API Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .cyber-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 255, 255, 0.1);
+        }
+        .cyber-button {
+            background: linear-gradient(45deg, #00ffff, #0080ff);
+            border: none;
+            color: #000;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .cyber-button:hover {
+            background: linear-gradient(45deg, #0080ff, #00ffff);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.4);
+        }
+        .glow-text {
+            text-shadow: 0 0 10px #00ffff;
+        }
+        .tier-card {
+            transition: all 0.3s ease;
+        }
+        .tier-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0, 255, 255, 0.3);
+        }
+        .tier-card.selected {
+            border-color: #00ffff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+        .api-key-display {
+            background: #1a1a1a;
+            border: 1px solid #00ffff;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: monospace;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-6xl font-bold text-white glow-text mb-4">🔌 API Generator</h1>
+            <p class="text-cyan-300 text-xl mb-6">Generate API keys for MailSift integration</p>
+            <p class="text-gray-400 text-lg">Build powerful applications with our email extraction API</p>
+        </div>
+
+        <!-- API Generator Form -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
+            <!-- Generator Form -->
+            <div class="cyber-card p-8">
+                <h2 class="text-3xl font-bold text-white mb-6 glow-text">🚀 Generate API Key</h2>
+                
+                <form id="api-generator-form" onsubmit="generateAPIKey(event)">
+                    <div class="mb-6">
+                        <label class="block text-gray-300 mb-2">Email Address</label>
+                        <input type="email" id="user-email" required
+                               class="w-full p-3 bg-gray-800 border border-cyan-500 rounded-lg text-white focus:outline-none focus:border-cyan-400"
+                               placeholder="your@email.com">
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-gray-300 mb-2">Choose Tier</label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="tier-card cyber-card p-4 cursor-pointer" data-tier="free">
+                                <div class="text-center">
+                                    <div class="text-2xl mb-2">🆓</div>
+                                    <h3 class="text-lg font-bold text-white">Free Tier</h3>
+                                    <p class="text-gray-300 text-sm">100 requests/day</p>
+                                    <p class="text-cyan-400 font-bold">$0/month</p>
+                                </div>
+                            </div>
+                            
+                            <div class="tier-card cyber-card p-4 cursor-pointer" data-tier="pay_as_you_use">
+                                <div class="text-center">
+                                    <div class="text-2xl mb-2">⚡</div>
+                                    <h3 class="text-lg font-bold text-white">Pay-as-You-Use</h3>
+                                    <p class="text-gray-300 text-sm">No daily limits</p>
+                                    <p class="text-cyan-400 font-bold">$0.001/credit</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="w-full cyber-button py-4 rounded-lg text-lg">
+                        🔑 Generate API Key
+                    </button>
+                </form>
+                
+                <!-- Generated API Key Display -->
+                <div id="api-key-result" class="mt-6 hidden">
+                    <h3 class="text-xl font-bold text-white mb-4">✅ Your API Key</h3>
+                    <div class="api-key-display text-green-400 mb-4" id="api-key-value"></div>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-300">Tier:</span>
+                            <span class="text-cyan-400" id="api-tier"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-300">Credits:</span>
+                            <span class="text-cyan-400" id="api-credits"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-300">Rate Limit:</span>
+                            <span class="text-cyan-400" id="api-rate-limit"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-300">Status:</span>
+                            <span class="text-green-400">Active</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pricing Information -->
+            <div class="space-y-8">
+                <!-- Pricing Tiers -->
+                <div class="cyber-card p-6">
+                    <h3 class="text-2xl font-bold text-white mb-4 glow-text">💰 Pricing Tiers</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center p-3 bg-gray-800 rounded">
+                            <div>
+                                <div class="text-white font-semibold">Free Tier</div>
+                                <div class="text-gray-300 text-sm">100 requests/day</div>
+                            </div>
+                            <div class="text-green-400 font-bold">$0</div>
+                        </div>
+                        
+                        <div class="flex justify-between items-center p-3 bg-gray-800 rounded">
+                            <div>
+                                <div class="text-white font-semibold">Pay-as-You-Use</div>
+                                <div class="text-gray-300 text-sm">No daily limits</div>
+                            </div>
+                            <div class="text-cyan-400 font-bold">$0.001/credit</div>
+                        </div>
+                        
+                        <div class="flex justify-between items-center p-3 bg-gray-800 rounded">
+                            <div>
+                                <div class="text-white font-semibold">Pro</div>
+                                <div class="text-gray-300 text-sm">10,000 requests/day</div>
+                            </div>
+                            <div class="text-purple-400 font-bold">$29/month</div>
+                        </div>
+                        
+                        <div class="flex justify-between items-center p-3 bg-gray-800 rounded">
+                            <div>
+                                <div class="text-white font-semibold">Enterprise</div>
+                                <div class="text-gray-300 text-sm">Unlimited</div>
+                            </div>
+                            <div class="text-yellow-400 font-bold">Custom</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Credit Packages -->
+                <div class="cyber-card p-6">
+                    <h3 class="text-2xl font-bold text-white mb-4 glow-text">💳 Credit Packages</h3>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-800 p-4 rounded text-center">
+                            <div class="text-white font-bold">1,000 Credits</div>
+                            <div class="text-cyan-400">$1.00</div>
+                        </div>
+                        <div class="bg-gray-800 p-4 rounded text-center">
+                            <div class="text-white font-bold">5,000 Credits</div>
+                            <div class="text-cyan-400">$4.50</div>
+                            <div class="text-green-400 text-xs">+500 Bonus</div>
+                        </div>
+                        <div class="bg-gray-800 p-4 rounded text-center">
+                            <div class="text-white font-bold">10,000 Credits</div>
+                            <div class="text-cyan-400">$8.00</div>
+                            <div class="text-green-400 text-xs">+2,000 Bonus</div>
+                        </div>
+                        <div class="bg-gray-800 p-4 rounded text-center">
+                            <div class="text-white font-bold">50,000 Credits</div>
+                            <div class="text-cyan-400">$35.00</div>
+                            <div class="text-green-400 text-xs">+15,000 Bonus</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="cyber-card p-6">
+                    <h3 class="text-2xl font-bold text-white mb-4 glow-text">⚡ Quick Actions</h3>
+                    
+                    <div class="space-y-3">
+                        <button onclick="window.location.href='/api/docs'" class="w-full bg-blue-600 hover:bg-blue-700 px-4 py-3 rounded-lg text-white">
+                            📚 View API Documentation
+                        </button>
+                        <button onclick="showUsageStats()" class="w-full bg-green-600 hover:bg-green-700 px-4 py-3 rounded-lg text-white">
+                            📊 Check Usage Stats
+                        </button>
+                        <button onclick="window.location.href='/support'" class="w-full bg-purple-600 hover:bg-purple-700 px-4 py-3 rounded-lg text-white">
+                            🤖 Get API Support
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Features -->
+        <div class="mb-12">
+            <h2 class="text-4xl font-bold text-white text-center mb-8 glow-text">🚀 API Features</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="cyber-card p-6 text-center">
+                    <div class="text-4xl mb-4">🔍</div>
+                    <h3 class="text-lg font-bold text-white mb-2">Email Extraction</h3>
+                    <p class="text-gray-300 text-sm">Extract emails from text, HTML, files, and URLs</p>
+                </div>
+                
+                <div class="cyber-card p-6 text-center">
+                    <div class="text-4xl mb-4">✅</div>
+                    <h3 class="text-lg font-bold text-white mb-2">Email Validation</h3>
+                    <p class="text-gray-300 text-sm">Real-time email validation with 99.9% accuracy</p>
+                </div>
+                
+                <div class="cyber-card p-6 text-center">
+                    <div class="text-4xl mb-4">🌐</div>
+                    <h3 class="text-lg font-bold text-white mb-2">Web Scraping</h3>
+                    <p class="text-gray-300 text-sm">Scrape emails from websites with anti-bot protection</p>
+                </div>
+                
+                <div class="cyber-card p-6 text-center">
+                    <div class="text-4xl mb-4">🔍</div>
+                    <h3 class="text-lg font-bold text-white mb-2">Keyword Search</h3>
+                    <p class="text-gray-300 text-sm">Find emails by keywords and industry</p>
+                </div>
+                
+                <div class="cyber-card p-6 text-center">
+                    <div class="text-4xl mb-4">📊</div>
+                    <h3 class="text-lg font-bold text-white mb-2">Analytics</h3>
+                    <p class="text-gray-300 text-sm">Detailed usage statistics and reporting</p>
+                </div>
+                
+                <div class="cyber-card p-6 text-center">
+                    <div class="text-4xl mb-4">⚡</div>
+                    <h3 class="text-lg font-bold text-white mb-2">High Performance</h3>
+                    <p class="text-gray-300 text-sm">Process thousands of emails per second</p>
+                </div>
+                
+                <div class="cyber-card p-6 text-center">
+                    <div class="text-4xl mb-4">🔒</div>
+                    <h3 class="text-lg font-bold text-white mb-2">Secure</h3>
+                    <p class="text-gray-300 text-sm">Enterprise-grade security and encryption</p>
+                </div>
+                
+                <div class="cyber-card p-6 text-center">
+                    <div class="text-4xl mb-4">📱</div>
+                    <h3 class="text-lg font-bold text-white mb-2">SDKs Available</h3>
+                    <p class="text-gray-300 text-sm">Python, JavaScript, PHP, and more</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Use Cases -->
+        <div class="mb-12">
+            <h2 class="text-4xl font-bold text-white text-center mb-8 glow-text">🎯 Perfect For</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="cyber-card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">💼 Lead Generation</h3>
+                    <ul class="text-gray-300 space-y-2">
+                        <li>• Extract emails from competitor websites</li>
+                        <li>• Find contact information for prospects</li>
+                        <li>• Build targeted email lists</li>
+                        <li>• Validate email addresses before outreach</li>
+                    </ul>
+                </div>
+                
+                <div class="cyber-card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">📧 Email Marketing</h3>
+                    <ul class="text-gray-300 space-y-2">
+                        <li>• Clean and validate existing email lists</li>
+                        <li>• Find new subscribers from content</li>
+                        <li>• Segment emails by domain/provider</li>
+                        <li>• Reduce bounce rates</li>
+                    </ul>
+                </div>
+                
+                <div class="cyber-card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">🔍 Research & Analysis</h3>
+                    <ul class="text-gray-300 space-y-2">
+                        <li>• Academic research data collection</li>
+                        <li>• Market research and surveys</li>
+                        <li>• Competitive intelligence</li>
+                        <li>• Social media analysis</li>
+                    </ul>
+                </div>
+                
+                <div class="cyber-card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">🛡️ Security & Compliance</h3>
+                    <ul class="text-gray-300 space-y-2">
+                        <li>• Detect data breaches</li>
+                        <li>• Monitor for exposed emails</li>
+                        <li>• Compliance auditing</li>
+                        <li>• Security assessments</li>
+                    </ul>
+                </div>
+                
+                <div class="cyber-card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">🤖 Automation</h3>
+                    <ul class="text-gray-300 space-y-2">
+                        <li>• Automated lead generation</li>
+                        <li>• CRM data enrichment</li>
+                        <li>• Workflow automation</li>
+                        <li>• Integration with existing tools</li>
+                    </ul>
+                </div>
+                
+                <div class="cyber-card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">📊 Data Processing</h3>
+                    <ul class="text-gray-300 space-y-2">
+                        <li>• Bulk email processing</li>
+                        <li>• Data cleaning and validation</li>
+                        <li>• Format conversion</li>
+                        <li>• Large-scale data analysis</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedTier = 'free';
+        
+        // Tier selection
+        document.querySelectorAll('.tier-card').forEach(card => {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('.tier-card').forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedTier = this.dataset.tier;
+            });
+        });
+        
+        // Select free tier by default
+        document.querySelector('[data-tier="free"]').classList.add('selected');
+        
+        function generateAPIKey(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('user-email').value;
+            
+            if (!email) {
+                alert('Please enter your email address');
+                return;
+            }
+            
+            fetch('/api/generate-key', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email: email,
+                    tier: selectedTier
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Display API key
+                    document.getElementById('api-key-value').textContent = data.api_key;
+                    document.getElementById('api-tier').textContent = data.tier;
+                    document.getElementById('api-credits').textContent = data.credits_remaining;
+                    document.getElementById('api-rate-limit').textContent = data.rate_limit_per_hour + '/hour';
+                    
+                    document.getElementById('api-key-result').classList.remove('hidden');
+                    
+                    // Copy to clipboard
+                    navigator.clipboard.writeText(data.api_key);
+                    alert('API key generated and copied to clipboard!');
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('Error generating API key: ' + error.message);
+            });
+        }
+        
+        function showUsageStats() {
+            const apiKey = document.getElementById('api-key-value')?.textContent;
+            
+            if (!apiKey) {
+                alert('Please generate an API key first');
+                return;
+            }
+            
+            fetch('/api/usage-stats', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    api_key: apiKey
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Usage Stats:\n\nCredits Remaining: ' + data.stats.key_info.credits_remaining + 
+                          '\nTotal Credits Used: ' + data.stats.key_info.total_credits_used +
+                          '\nTotal Spent: $' + data.stats.total_spent.toFixed(4));
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('Error getting usage stats: ' + error.message);
+            });
+        }
+    </script>
+</body>
+</html>

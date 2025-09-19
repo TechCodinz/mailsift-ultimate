@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MailSift Ultra - API Documentation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .cyber-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 255, 255, 0.1);
+        }
+        .glow-text {
+            text-shadow: 0 0 10px #00ffff;
+        }
+        .code-block {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: monospace;
+            overflow-x: auto;
+        }
+        .method-get { color: #4ade80; }
+        .method-post { color: #f59e0b; }
+        .method-put { color: #3b82f6; }
+        .method-delete { color: #ef4444; }
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #333;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .copy-btn:hover {
+            background: #555;
+        }
+        .endpoint-section {
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-6xl font-bold text-white glow-text mb-4">📚 API Documentation</h1>
+            <p class="text-cyan-300 text-xl mb-6">Complete guide to MailSift Ultra API</p>
+            <p class="text-gray-400 text-lg">Build powerful applications with our email extraction API</p>
+        </div>
+
+        <!-- Quick Start -->
+        <div class="cyber-card p-8 mb-12">
+            <h2 class="text-3xl font-bold text-white mb-6 glow-text">🚀 Quick Start</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-4">1. Get Your API Key</h3>
+                    <p class="text-gray-300 mb-4">Generate a free API key to get started:</p>
+                    <div class="code-block relative">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre><code>curl -X POST https://mailsift.com/api/generate-key \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "your@email.com",
+    "tier": "free"
+  }'</code></pre>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-4">2. Make Your First Request</h3>
+                    <p class="text-gray-300 mb-4">Extract emails from text:</p>
+                    <div class="code-block relative">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre><code>curl -X POST https://mailsift.com/api/v5/extract \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "text": "Contact us at support@mailsift.com or sales@company.com"
+  }'</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Authentication -->
+        <div class="cyber-card p-8 mb-12">
+            <h2 class="text-3xl font-bold text-white mb-6 glow-text">🔐 Authentication</h2>
+            
+            <p class="text-gray-300 mb-6">All API requests require authentication using your API key. Include it in the Authorization header:</p>
+            
+            <div class="code-block relative">
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre><code>Authorization: Bearer YOUR_API_KEY</code></pre>
+            </div>
+            
+            <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-green-900 border border-green-500 p-4 rounded">
+                    <h4 class="text-green-400 font-bold mb-2">✅ Valid Request</h4>
+                    <p class="text-green-300 text-sm">Returns data with 200 status code</p>
+                </div>
+                <div class="bg-red-900 border border-red-500 p-4 rounded">
+                    <h4 class="text-red-400 font-bold mb-2">❌ Invalid Key</h4>
+                    <p class="text-red-300 text-sm">Returns 401 Unauthorized error</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Endpoints -->
+        <div class="space-y-8">
+            <!-- Email Extraction -->
+            <div class="cyber-card p-8 endpoint-section">
+                <h2 class="text-3xl font-bold text-white mb-6 glow-text">🔍 Email Extraction</h2>
+                
+                <div class="mb-6">
+                    <span class="method-post font-bold">POST</span>
+                    <span class="text-cyan-400 ml-4">/api/v5/extract</span>
+                    <span class="text-gray-400 ml-4">Extract emails from text content</span>
+                </div>
+                
+                <h3 class="text-xl font-bold text-white mb-4">Request Body</h3>
+                <div class="code-block relative">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre><code>{
+  "text": "string (required) - Text content to extract emails from",
+  "validate": "boolean (optional) - Validate extracted emails (default: true)",
+  "format": "string (optional) - Output format: 'json' or 'csv' (default: 'json')"
+}</code></pre>
+                </div>
+                
+                <h3 class="text-xl font-bold text-white mb-4 mt-6">Example Request</h3>
+                <div class="code-block relative">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre><code>curl -X POST https://mailsift.com/api/v5/extract \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "text": "Contact us at support@mailsift.com or sales@company.com for more info.",
+    "validate": true,
+    "format": "json"
+  }'</code></pre>
+                </div>
+                
+                <h3 class="text-xl font-bold text-white mb-4 mt-6">Example Response</h3>
+                <div class="code-block relative">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre><code>{
+  "status": "success",
+  "total_emails": 2,
+  "valid_emails": 2,
+  "emails": [
+    {
+      "email": "support@mailsift.com",
+      "is_valid": true,
+      "provider": "business",
+      "confidence": 0.98
+    },
+    {
+      "email": "sales@company.com",
+      "is_valid": true,
+      "provider": "business",
+      "confidence": 0.95
+    }
+  ],
+  "credits_used": 1,
+  "credits_remaining": 99
+}</code></pre>
+                </div>
+            </div>
+
+            <!-- Web Scraping -->
+            <div class="cyber-card p-8 endpoint-section">
+                <h2 class="text-3xl font-bold text-white mb-6 glow-text">🌐 Web Scraping</h2>
+                
+                <div class="mb-6">
+                    <span class="method-post font-bold">POST</span>
+                    <span class="text-cyan-400 ml-4">/api/v5/ultra-scrape</span>
+                    <span class="text-gray-400 ml-4">Extract emails from websites</span>
+                </div>
+                
+                <h3 class="text-xl font-bold text-white mb-4">Request Body</h3>
+                <div class="code-block relative">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre><code>{
+  "url": "string (required) - URL to scrape emails from",
+  "max_pages": "integer (optional) - Maximum pages to scrape (default: 5)",
+  "follow_links": "boolean (optional) - Follow internal links (default: true)",
+  "validate": "boolean (optional) - Validate extracted emails (default: true)"
+}</code></pre>
+                </div>
+                
+                <h3 class="text-xl font-bold text-white mb-4 mt-6">Example Request</h3>
+                <div class="code-block relative">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre><code>curl -X POST https://mailsift.com/api/v5/ultra-scrape \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "url": "https://example.com/contact",
+    "max_pages": 3,
+    "follow_links": true,
+    "validate": true
+  }'</code></pre>
+                </div>
+            </div>
+
+            <!-- Email Validation -->
+            <div class="cyber-card p-8 endpoint-section">
+                <h2 class="text-3xl font-bold text-white mb-6 glow-text">✅ Email Validation</h2>
+                
+                <div class="mb-6">
+                    <span class="method-post font-bold">POST</span>
+                    <span class="text-cyan-400 ml-4">/api/v5/validate</span>
+                    <span class="text-gray-400 ml-4">Validate email addresses</span>
+                </div>
+                
+                <h3 class="text-xl font-bold text-white mb-4">Request Body</h3>
+                <div class="code-block relative">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre><code>{
+  "emails": ["array of strings (required) - Email addresses to validate"],
+  "check_mx": "boolean (optional) - Check MX records (default: true)",
+  "check_smtp": "boolean (optional) - Check SMTP server (default: false)",
+  "check_disposable": "boolean (optional) - Check disposable domains (default: true)"
+}</code></pre>
+                </div>
+                
+                <h3 class="text-xl font-bold text-white mb-4 mt-6">Example Request</h3>
+                <div class="code-block relative">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre><code>curl -X POST https://mailsift.com/api/v5/validate \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "emails": [
+      "support@mailsift.com",
+      "invalid@nonexistent.com",
+      "test@10minutemail.com"
+    ],
+    "check_mx": true,
+    "check_smtp": false,
+    "check_disposable": true
+  }'</code></pre>
+                </div>
+            </div>
+
+            <!-- Keyword Search -->
+            <div class="cyber-card p-8 endpoint-section">
+                <h2 class="text-3xl font-bold text-white mb-6 glow-text">🔍 Keyword Search</h2>
+                
+                <div class="mb-6">
+                    <span class="method-post font-bold">POST</span>
+                    <span class="text-cyan-400 ml-4">/api/v5/ultra-search</span>
+                    <span class="text-gray-400 ml-4">Search emails by keywords</span>
+                </div>
+                
+                <h3 class="text-xl font-bold text-white mb-4">Request Body</h3>
+                <div class="code-block relative">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre><code>{
+  "query": "string (required) - Search query or keywords",
+  "industry": "string (optional) - Industry filter",
+  "limit": "integer (optional) - Maximum results (default: 100)",
+  "fuzzy_match": "boolean (optional) - Enable fuzzy matching (default: true)"
+}</code></pre>
+                </div>
+                
+                <h3 class="text-xl font-bold text-white mb-4 mt-6">Example Request</h3>
+                <div class="code-block relative">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre><code>curl -X POST https://mailsift.com/api/v5/ultra-search \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "query": "marketing director",
+    "industry": "technology",
+    "limit": 50,
+    "fuzzy_match": true
+  }'</code></pre>
+                </div>
+            </div>
+
+            <!-- Usage Statistics -->
+            <div class="cyber-card p-8 endpoint-section">
+                <h2 class="text-3xl font-bold text-white mb-6 glow-text">📊 Usage Statistics</h2>
+                
+                <div class="mb-6">
+                    <span class="method-post font-bold">POST</span>
+                    <span class="text-cyan-400 ml-4">/api/usage-stats</span>
+                    <span class="text-gray-400 ml-4">Get your API usage statistics</span>
+                </div>
+                
+                <h3 class="text-xl font-bold text-white mb-4">Request Body</h3>
+                <div class="code-block relative">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre><code>{
+  "api_key": "string (required) - Your API key"
+}</code></pre>
+                </div>
+                
+                <h3 class="text-xl font-bold text-white mb-4 mt-6">Example Response</h3>
+                <div class="code-block relative">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre><code>{
+  "status": "success",
+  "stats": {
+    "key_info": {
+      "tier": "free",
+      "credits_remaining": 87,
+      "total_credits_used": 13,
+      "rate_limit_per_hour": 20
+    },
+    "recent_usage": [
+      {
+        "endpoint": "/api/v5/extract",
+        "calls": 10,
+        "total_credits": 10,
+        "avg_response_time_ms": 245
+      }
+    ],
+    "daily_usage": [
+      {
+        "date": "2024-01-15",
+        "calls": 5,
+        "credits": 5
+      }
+    ],
+    "total_spent": 0.0
+  }
+}</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- SDKs and Libraries -->
+        <div class="cyber-card p-8 mb-12">
+            <h2 class="text-3xl font-bold text-white mb-6 glow-text">📦 SDKs & Libraries</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-gray-800 p-6 rounded">
+                    <h3 class="text-xl font-bold text-white mb-4">🐍 Python</h3>
+                    <div class="code-block relative">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre><code>pip install mailsift
+
+from mailsift import MailSiftClient
+
+client = MailSiftClient(api_key="YOUR_API_KEY")
+emails = client.extract("Contact us at support@mailsift.com")</code></pre>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-800 p-6 rounded">
+                    <h3 class="text-xl font-bold text-white mb-4">🟨 JavaScript</h3>
+                    <div class="code-block relative">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre><code>npm install mailsift
+
+const { MailSiftClient } = require('mailsift');
+
+const client = new MailSiftClient('YOUR_API_KEY');
+const emails = await client.extract('Contact us at support@mailsift.com');</code></pre>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-800 p-6 rounded">
+                    <h3 class="text-xl font-bold text-white mb-4">🐘 PHP</h3>
+                    <div class="code-block relative">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre><code>composer require mailsift/mailsift
+
+use MailSift\MailSiftClient;
+
+$client = new MailSiftClient('YOUR_API_KEY');
+$emails = $client->extract('Contact us at support@mailsift.com');</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Codes -->
+        <div class="cyber-card p-8 mb-12">
+            <h2 class="text-3xl font-bold text-white mb-6 glow-text">⚠️ Error Codes</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div class="bg-red-900 border border-red-500 p-4 rounded">
+                        <h4 class="text-red-400 font-bold">400 - Bad Request</h4>
+                        <p class="text-red-300 text-sm">Invalid request parameters or missing required fields</p>
+                    </div>
+                    
+                    <div class="bg-red-900 border border-red-500 p-4 rounded">
+                        <h4 class="text-red-400 font-bold">401 - Unauthorized</h4>
+                        <p class="text-red-300 text-sm">Invalid or missing API key</p>
+                    </div>
+                    
+                    <div class="bg-red-900 border border-red-500 p-4 rounded">
+                        <h4 class="text-red-400 font-bold">403 - Forbidden</h4>
+                        <p class="text-red-300 text-sm">API key doesn't have permission for this endpoint</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="bg-red-900 border border-red-500 p-4 rounded">
+                        <h4 class="text-red-400 font-bold">429 - Rate Limited</h4>
+                        <p class="text-red-300 text-sm">Too many requests. Check rate limits</p>
+                    </div>
+                    
+                    <div class="bg-red-900 border border-red-500 p-4 rounded">
+                        <h4 class="text-red-400 font-bold">500 - Server Error</h4>
+                        <p class="text-red-300 text-sm">Internal server error. Contact support</p>
+                    </div>
+                    
+                    <div class="bg-red-900 border border-red-500 p-4 rounded">
+                        <h4 class="text-red-400 font-bold">503 - Service Unavailable</h4>
+                        <p class="text-red-300 text-sm">Service temporarily unavailable</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rate Limits -->
+        <div class="cyber-card p-8 mb-12">
+            <h2 class="text-3xl font-bold text-white mb-6 glow-text">⚡ Rate Limits</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-gray-800 p-6 rounded text-center">
+                    <h3 class="text-xl font-bold text-white mb-2">Free Tier</h3>
+                    <div class="text-cyan-400 text-2xl font-bold">20/hour</div>
+                    <div class="text-gray-400 text-sm">100 requests/day</div>
+                </div>
+                
+                <div class="bg-gray-800 p-6 rounded text-center">
+                    <h3 class="text-xl font-bold text-white mb-2">Pay-as-You-Use</h3>
+                    <div class="text-cyan-400 text-2xl font-bold">100/hour</div>
+                    <div class="text-gray-400 text-sm">No daily limit</div>
+                </div>
+                
+                <div class="bg-gray-800 p-6 rounded text-center">
+                    <h3 class="text-xl font-bold text-white mb-2">Pro</h3>
+                    <div class="text-cyan-400 text-2xl font-bold">500/hour</div>
+                    <div class="text-gray-400 text-sm">10,000 requests/day</div>
+                </div>
+                
+                <div class="bg-gray-800 p-6 rounded text-center">
+                    <h3 class="text-xl font-bold text-white mb-2">Enterprise</h3>
+                    <div class="text-cyan-400 text-2xl font-bold">1000/hour</div>
+                    <div class="text-gray-400 text-sm">Unlimited</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Support -->
+        <div class="cyber-card p-8 text-center">
+            <h2 class="text-3xl font-bold text-white mb-6 glow-text">🆘 Need Help?</h2>
+            <p class="text-gray-300 mb-6">Our support team is here to help you integrate MailSift API</p>
+            
+            <div class="flex flex-wrap justify-center gap-4">
+                <button onclick="window.location.href='/support'" class="cyber-button px-6 py-3 rounded-lg">
+                    🤖 AI Support Chat
+                </button>
+                <button onclick="window.location.href='/contact'" class="bg-gray-700 hover:bg-gray-600 px-6 py-3 rounded-lg text-white">
+                    📧 Contact Support
+                </button>
+                <button onclick="window.location.href='/api/generator'" class="bg-gray-700 hover:bg-gray-600 px-6 py-3 rounded-lg text-white">
+                    🔑 Get API Key
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyCode(button) {
+            const codeBlock = button.nextElementSibling;
+            const text = codeBlock.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                button.textContent = 'Copied!';
+                setTimeout(() => {
+                    button.textContent = 'Copy';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

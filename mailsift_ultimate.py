@@ -41,6 +41,7 @@ from ultra_keyword_search import ultra_search_engine, SearchQuery
 from ultra_error_handling import ultra_error_handler, ErrorContext
 from ultra_monitoring import ultra_monitoring, set_gauge, increment_counter
 from ai_support import ai_support_engine
+from api_generator import api_generator
 from ultra_performance import (ultra_performance, monitor_performance,
                                PerformanceLevel)
 # Additional imports for enhanced functionality
@@ -2421,6 +2422,126 @@ def download_desktop_file(platform: str) -> Response:
         )
         error_id = ultra_error_handler.handle_error(e, error_context)
         return jsonify({"error": "Download error", "error_id": error_id}), 500
+
+
+@app.route("/api/generator")
+@monitor_performance(PerformanceLevel.BASIC)
+def api_generator_page() -> str:
+    """Serve the API generator page"""
+    return render_template('api_generator_ultra.html')
+
+
+@app.route("/api/generate-key", methods=["POST"])
+@monitor_performance(PerformanceLevel.BASIC)
+def generate_api_key() -> Dict[str, Any]:
+    """Generate a new API key"""
+    try:
+        data = request.get_json()
+        user_email = data.get('email', '')
+        tier = data.get('tier', 'free')
+        
+        if not user_email:
+            return jsonify({"error": "Email is required"}), 400
+        
+        # Generate API key
+        api_key_obj = api_generator.generate_api_key(user_email, tier)
+        
+        return jsonify({
+            "status": "success",
+            "api_key": api_key_obj.api_key,
+            "key_id": api_key_obj.key_id,
+            "tier": api_key_obj.tier,
+            "credits_remaining": api_key_obj.credits_remaining,
+            "rate_limit_per_hour": api_key_obj.rate_limit_per_hour,
+            "pricing": api_generator.get_pricing_info()['tiers'][tier]
+        })
+        
+    except Exception as e:
+        error_context = ErrorContext(
+            endpoint="generate_api_key",
+            timestamp=datetime.now().isoformat()
+        )
+        error_id = ultra_error_handler.handle_error(e, error_context)
+        return jsonify({"error": "API key generation failed", "error_id": error_id}), 500
+
+
+@app.route("/api/usage-stats", methods=["POST"])
+@monitor_performance(PerformanceLevel.BASIC)
+def get_api_usage_stats() -> Dict[str, Any]:
+    """Get API usage statistics"""
+    try:
+        data = request.get_json()
+        api_key = data.get('api_key', '')
+        
+        if not api_key:
+            return jsonify({"error": "API key is required"}), 400
+        
+        stats = api_generator.get_usage_stats(api_key)
+        
+        if not stats:
+            return jsonify({"error": "Invalid API key"}), 401
+        
+        return jsonify({
+            "status": "success",
+            "stats": stats
+        })
+        
+    except Exception as e:
+        error_context = ErrorContext(
+            endpoint="get_api_usage_stats",
+            timestamp=datetime.now().isoformat()
+        )
+        error_id = ultra_error_handler.handle_error(e, error_context)
+        return jsonify({"error": "Failed to get usage stats", "error_id": error_id}), 500
+
+
+@app.route("/api/purchase-credits", methods=["POST"])
+@monitor_performance(PerformanceLevel.BASIC)
+def purchase_api_credits() -> Dict[str, Any]:
+    """Purchase credits for pay-as-you-use API"""
+    try:
+        data = request.get_json()
+        api_key = data.get('api_key', '')
+        credits = data.get('credits', 0)
+        payment_method = data.get('payment_method', 'crypto')
+        transaction_id = data.get('transaction_id', '')
+        
+        if not all([api_key, credits]):
+            return jsonify({"error": "API key and credits are required"}), 400
+        
+        # Calculate amount based on pricing
+        pricing = api_generator.get_pricing_info()['tiers']['pay_as_you_use']
+        amount = credits * pricing['price_per_credit']
+        
+        # Record purchase
+        success = api_generator.purchase_credits(
+            api_key, credits, amount, payment_method, transaction_id
+        )
+        
+        if success:
+            return jsonify({
+                "status": "success",
+                "credits_purchased": credits,
+                "amount_paid": amount,
+                "message": "Credits purchased successfully"
+            })
+        else:
+            return jsonify({"error": "Failed to purchase credits"}), 400
+        
+    except Exception as e:
+        error_context = ErrorContext(
+            endpoint="purchase_api_credits",
+            timestamp=datetime.now().isoformat()
+        )
+        error_id = ultra_error_handler.handle_error(e, error_context)
+        return jsonify({"error": "Credit purchase failed", "error_id": error_id}), 500
+
+
+@app.route("/api/docs")
+@monitor_performance(PerformanceLevel.BASIC)
+def api_documentation() -> str:
+    """Serve API documentation page"""
+    return render_template('api_docs_ultra.html')
 
 
 @app.route("/admin/payments")
