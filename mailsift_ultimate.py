@@ -35,6 +35,7 @@ from bs4 import BeautifulSoup
 import smtplib
 from crypto_payments import crypto_payment_system
 from ultra_email_extractor import ultra_extractor
+from ultra_web_scraper import ultra_scraper, ScrapingConfig
 # Additional imports for enhanced functionality
 
 # Configure logging
@@ -1122,6 +1123,189 @@ def _extract_from_url_ultra(url: str):
     except Exception as e:
         logger.error(f"URL extraction failed for {url}: {e}")
         return None
+
+
+@app.route("/api/v5/ultra-scrape", methods=["POST"])
+@limiter.limit("20 per minute")
+def ultra_scrape() -> Dict[str, Any]:
+    """ULTRA-ADVANCED web scraping with world-class capabilities"""
+    start_time = time.time()
+    data = request.get_json()
+
+    # Get user
+    user_id = session.get("user_id", "anonymous")
+
+    # Check credits
+    if not _check_credits(user_id, 1):
+        return (
+            jsonify({"error": "Insufficient credits", "upgrade_url": "/pricing"}),
+            402,
+        )
+
+    urls = data.get("urls", [])
+    if not urls:
+        return jsonify({"error": "No URLs provided"}), 400
+
+    # Limit URLs for performance
+    urls = urls[:20]  # Max 20 URLs per request
+
+    # Configure scraping
+    config = ScrapingConfig(
+        max_workers=min(10, len(urls)),
+        timeout=30,
+        retry_attempts=3,
+        delay_between_requests=1.0,
+        respect_robots_txt=True,
+        follow_redirects=True,
+        user_agents_rotation=True
+    )
+
+    # Perform ultra scraping
+    scraping_results = ultra_scraper.scrape_multiple_urls(urls)
+
+    # Process results
+    all_emails = set()
+    successful_scrapes = 0
+    failed_scrapes = 0
+    total_emails_found = 0
+
+    detailed_results = []
+    for result in scraping_results:
+        if result.success:
+            successful_scrapes += 1
+            all_emails.update(result.emails)
+            total_emails_found += len(result.emails)
+            
+            detailed_results.append({
+                "url": result.url,
+                "success": True,
+                "emails_found": len(result.emails),
+                "emails": result.emails,
+                "response_time": result.response_time,
+                "status_code": result.status_code,
+                "content_type": result.content_type,
+                "metadata": result.metadata or {}
+            })
+        else:
+            failed_scrapes += 1
+            detailed_results.append({
+                "url": result.url,
+                "success": False,
+                "error": result.error_message,
+                "status_code": result.status_code,
+                "response_time": result.response_time
+            })
+
+    # Verify emails with our verification engine
+    verified_emails = []
+    for email in all_emails:
+        verification = verification_engine.verify_email(email)
+        if verification['is_valid']:
+            verified_emails.append(email)
+
+    # Track usage
+    _deduct_credits(user_id, len(verified_emails))
+    _track_extraction(user_id, len(verified_emails))
+
+    processing_time = time.time() - start_time
+
+    return jsonify(
+        {
+            "success": True,
+            "scraping_summary": {
+                "total_urls": len(urls),
+                "successful_scrapes": successful_scrapes,
+                "failed_scrapes": failed_scrapes,
+                "total_emails_found": total_emails_found,
+                "verified_emails": len(verified_emails),
+                "success_rate": round((successful_scrapes / len(urls)) * 100, 2)
+            },
+            "emails": verified_emails,
+            "detailed_results": detailed_results,
+            "processing_time": round(processing_time, 2),
+            "credits_used": len(verified_emails),
+            "credits_remaining": _get_credits(user_id),
+            "scraping_config": {
+                "max_workers": config.max_workers,
+                "timeout": config.timeout,
+                "retry_attempts": config.retry_attempts,
+                "user_agent_rotation": config.user_agents_rotation,
+                "robots_txt_respect": config.respect_robots_txt
+            }
+        }
+    )
+
+
+@app.route("/api/v5/discover-contacts", methods=["POST"])
+@limiter.limit("5 per minute")
+def discover_contact_pages() -> Dict[str, Any]:
+    """Discover contact pages from a website"""
+    start_time = time.time()
+    data = request.get_json()
+
+    # Get user
+    user_id = session.get("user_id", "anonymous")
+
+    # Check credits
+    if not _check_credits(user_id, 5):  # More expensive operation
+        return (
+            jsonify({"error": "Insufficient credits", "upgrade_url": "/pricing"}),
+            402,
+        )
+
+    base_url = data.get("url", "").strip()
+    if not base_url:
+        return jsonify({"error": "URL required"}), 400
+
+    max_pages = min(data.get("max_pages", 10), 20)  # Limit to 20 pages
+
+    # Discover contact pages
+    contact_pages = ultra_scraper.discover_contact_pages(base_url, max_pages)
+
+    # Scrape discovered contact pages
+    all_emails = set()
+    scraping_results = []
+
+    if contact_pages:
+        results = ultra_scraper.scrape_multiple_urls(contact_pages)
+        
+        for result in results:
+            if result.success:
+                all_emails.update(result.emails)
+                scraping_results.append({
+                    "url": result.url,
+                    "emails_found": len(result.emails),
+                    "emails": result.emails,
+                    "metadata": result.metadata or {}
+                })
+
+    # Verify emails
+    verified_emails = []
+    for email in all_emails:
+        verification = verification_engine.verify_email(email)
+        if verification['is_valid']:
+            verified_emails.append(email)
+
+    # Track usage
+    _deduct_credits(user_id, len(verified_emails))
+    _track_extraction(user_id, len(verified_emails))
+
+    processing_time = time.time() - start_time
+
+    return jsonify(
+        {
+            "success": True,
+            "base_url": base_url,
+            "contact_pages_discovered": len(contact_pages),
+            "contact_pages": contact_pages,
+            "total_emails_found": len(all_emails),
+            "verified_emails": verified_emails,
+            "scraping_results": scraping_results,
+            "processing_time": round(processing_time, 2),
+            "credits_used": len(verified_emails),
+            "credits_remaining": _get_credits(user_id)
+        }
+    )
 
 
 @app.route("/api/v5/bulk", methods=["POST"])
