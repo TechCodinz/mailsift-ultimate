@@ -517,7 +517,7 @@ class UltraEmailExtractor:
             'contact_indicators': sum(1 for keyword in [
                 'contact', 'email', 'reach'] if keyword in content.lower()),
             'estimated_quality': ('high' if len(content) > 1000 else
-                                 'medium' if len(content) > 100 else 'low')
+                                  'medium' if len(content) > 100 else 'low')
         }
 
 
