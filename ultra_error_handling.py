@@ -399,7 +399,7 @@ class UltraErrorHandler:
         """Decorator for automatic error handling"""
         def decorator(func: Callable) -> Callable:
             @functools.wraps(func)
-            def wrapper(*args: Any, **kwargs: Any) -> Any:
+            def wrapper(*args: object, **kwargs: object) -> object:
                 try:
                     return func(*args, **kwargs)
                 except Exception as e:
@@ -446,7 +446,8 @@ class UltraErrorHandler:
         """Get specific error report by ID"""
         return self.error_reports.get(error_id)
 
-    def resolve_error(self, error_id: str, resolution_notes: str = None) -> None:
+    def resolve_error(self, error_id: str,
+                      resolution_notes: str = None) -> None:
         """Mark error as resolved"""
         if error_id in self.error_reports:
             self.error_reports[error_id].resolved = True
