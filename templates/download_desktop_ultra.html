@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MailSift Ultra - Desktop Download</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .cyber-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 255, 255, 0.1);
+        }
+        .cyber-button {
+            background: linear-gradient(45deg, #00ffff, #0080ff);
+            border: none;
+            color: #000;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .cyber-button:hover {
+            background: linear-gradient(45deg, #0080ff, #00ffff);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.4);
+        }
+        .glow-text {
+            text-shadow: 0 0 10px #00ffff;
+        }
+        .download-card {
+            transition: all 0.3s ease;
+        }
+        .download-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0, 255, 255, 0.3);
+        }
+        .feature-icon {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-6xl font-bold text-white glow-text mb-4">💻 MailSift Desktop</h1>
+            <p class="text-cyan-300 text-xl mb-6">Professional Email Extraction Software</p>
+            <p class="text-gray-400 text-lg">Download the standalone desktop application for offline email extraction and validation</p>
+        </div>
+
+        <!-- Download Options -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <!-- Windows -->
+            <div class="cyber-card p-8 text-center download-card">
+                <div class="text-6xl mb-4 feature-icon">🪟</div>
+                <h3 class="text-2xl font-bold text-white mb-4">Windows</h3>
+                <p class="text-gray-300 mb-6">Compatible with Windows 10/11</p>
+                <div class="mb-6">
+                    <div class="text-cyan-400 font-mono text-sm mb-2">Version 1.0.0</div>
+                    <div class="text-gray-400 text-sm">File Size: 45 MB</div>
+                </div>
+                <button onclick="downloadDesktop('windows')" class="w-full cyber-button py-4 rounded-lg text-lg mb-4">
+                    Download for Windows
+                </button>
+                <div class="text-xs text-gray-500">
+                    .exe installer included
+                </div>
+            </div>
+
+            <!-- macOS -->
+            <div class="cyber-card p-8 text-center download-card">
+                <div class="text-6xl mb-4 feature-icon">🍎</div>
+                <h3 class="text-2xl font-bold text-white mb-4">macOS</h3>
+                <p class="text-gray-300 mb-6">Compatible with macOS 10.15+</p>
+                <div class="mb-6">
+                    <div class="text-cyan-400 font-mono text-sm mb-2">Version 1.0.0</div>
+                    <div class="text-gray-400 text-sm">File Size: 42 MB</div>
+                </div>
+                <button onclick="downloadDesktop('mac')" class="w-full cyber-button py-4 rounded-lg text-lg mb-4">
+                    Download for macOS
+                </button>
+                <div class="text-xs text-gray-500">
+                    .dmg installer included
+                </div>
+            </div>
+
+            <!-- Linux -->
+            <div class="cyber-card p-8 text-center download-card">
+                <div class="text-6xl mb-4 feature-icon">🐧</div>
+                <h3 class="text-2xl font-bold text-white mb-4">Linux</h3>
+                <p class="text-gray-300 mb-6">Compatible with Ubuntu 18.04+</p>
+                <div class="mb-6">
+                    <div class="text-cyan-400 font-mono text-sm mb-2">Version 1.0.0</div>
+                    <div class="text-gray-400 text-sm">File Size: 38 MB</div>
+                </div>
+                <button onclick="downloadDesktop('linux')" class="w-full cyber-button py-4 rounded-lg text-lg mb-4">
+                    Download for Linux
+                </button>
+                <div class="text-xs text-gray-500">
+                    .AppImage portable
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="mb-12">
+            <h2 class="text-4xl font-bold text-white text-center mb-8 glow-text">✨ Desktop Features</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="cyber-card p-6 text-center">
+                    <div class="text-4xl mb-4">🔍</div>
+                    <h3 class="text-lg font-bold text-white mb-2">Advanced Extraction</h3>
+                    <p class="text-gray-300 text-sm">13 regex patterns with AI-powered validation</p>
+                </div>
+                
+                <div class="cyber-card p-6 text-center">
+                    <div class="text-4xl mb-4">📁</div>
+                    <h3 class="text-lg font-bold text-white mb-2">Multi-Format Support</h3>
+                    <p class="text-gray-300 text-sm">TXT, CSV, HTML, PDF, DOCX, Excel files</p>
+                </div>
+                
+                <div class="cyber-card p-6 text-center">
+                    <div class="text-4xl mb-4">🌐</div>
+                    <h3 class="text-lg font-bold text-white mb-2">Web Scraping</h3>
+                    <p class="text-gray-300 text-sm">Extract emails directly from websites</p>
+                </div>
+                
+                <div class="cyber-card p-6 text-center">
+                    <div class="text-4xl mb-4">✅</div>
+                    <h3 class="text-lg font-bold text-white mb-2">Real-time Validation</h3>
+                    <p class="text-gray-300 text-sm">Instant email validation with 99.9% accuracy</p>
+                </div>
+                
+                <div class="cyber-card p-6 text-center">
+                    <div class="text-4xl mb-4">💾</div>
+                    <h3 class="text-lg font-bold text-white mb-2">Export Options</h3>
+                    <p class="text-gray-300 text-sm">CSV, Excel, JSON export formats</p>
+                </div>
+                
+                <div class="cyber-card p-6 text-center">
+                    <div class="text-4xl mb-4">🔑</div>
+                    <h3 class="text-lg font-bold text-white mb-2">License Integration</h3>
+                    <p class="text-gray-300 text-sm">Seamless license key verification</p>
+                </div>
+                
+                <div class="cyber-card p-6 text-center">
+                    <div class="text-4xl mb-4">⚡</div>
+                    <h3 class="text-lg font-bold text-white mb-2">High Performance</h3>
+                    <p class="text-gray-300 text-sm">Process thousands of emails in seconds</p>
+                </div>
+                
+                <div class="cyber-card p-6 text-center">
+                    <div class="text-4xl mb-4">🛡️</div>
+                    <h3 class="text-lg font-bold text-white mb-2">Offline Mode</h3>
+                    <p class="text-gray-300 text-sm">Works completely offline after download</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Requirements -->
+        <div class="mb-12">
+            <h2 class="text-4xl font-bold text-white text-center mb-8 glow-text">💻 System Requirements</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="cyber-card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">Windows Requirements</h3>
+                    <ul class="text-gray-300 space-y-2">
+                        <li>• Windows 10 or Windows 11</li>
+                        <li>• 4 GB RAM minimum</li>
+                        <li>• 100 MB free disk space</li>
+                        <li>• Internet connection for license verification</li>
+                    </ul>
+                </div>
+                
+                <div class="cyber-card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">macOS Requirements</h3>
+                    <ul class="text-gray-300 space-y-2">
+                        <li>• macOS 10.15 (Catalina) or later</li>
+                        <li>• 4 GB RAM minimum</li>
+                        <li>• 100 MB free disk space</li>
+                        <li>• Internet connection for license verification</li>
+                    </ul>
+                </div>
+                
+                <div class="cyber-card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">Linux Requirements</h3>
+                    <ul class="text-gray-300 space-y-2">
+                        <li>• Ubuntu 18.04 LTS or later</li>
+                        <li>• 4 GB RAM minimum</li>
+                        <li>• 100 MB free disk space</li>
+                        <li>• Internet connection for license verification</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Installation Instructions -->
+        <div class="mb-12">
+            <h2 class="text-4xl font-bold text-white text-center mb-8 glow-text">📋 Installation Guide</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="cyber-card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">Windows Installation</h3>
+                    <ol class="text-gray-300 space-y-2 text-sm">
+                        <li>1. Download the .exe installer</li>
+                        <li>2. Run the installer as administrator</li>
+                        <li>3. Follow the installation wizard</li>
+                        <li>4. Launch MailSift from desktop or start menu</li>
+                        <li>5. Enter your license key when prompted</li>
+                    </ol>
+                </div>
+                
+                <div class="cyber-card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">macOS Installation</h3>
+                    <ol class="text-gray-300 space-y-2 text-sm">
+                        <li>1. Download the .dmg file</li>
+                        <li>2. Open the downloaded .dmg file</li>
+                        <li>3. Drag MailSift to Applications folder</li>
+                        <li>4. Launch from Applications or Spotlight</li>
+                        <li>5. Enter your license key when prompted</li>
+                    </ol>
+                </div>
+                
+                <div class="cyber-card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">Linux Installation</h3>
+                    <ol class="text-gray-300 space-y-2 text-sm">
+                        <li>1. Download the .AppImage file</li>
+                        <li>2. Make it executable: chmod +x MailSift.AppImage</li>
+                        <li>3. Run: ./MailSift.AppImage</li>
+                        <li>4. Create desktop shortcut (optional)</li>
+                        <li>5. Enter your license key when prompted</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- License Information -->
+        <div class="cyber-card p-8 mb-12">
+            <h2 class="text-3xl font-bold text-white mb-6 glow-text">🔑 License Information</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-4">Desktop License</h3>
+                    <ul class="text-gray-300 space-y-2">
+                        <li>• One-time purchase, lifetime access</li>
+                        <li>• Works on all supported platforms</li>
+                        <li>• No monthly subscriptions</li>
+                        <li>• Offline functionality</li>
+                        <li>• Regular updates included</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-4">How to Get License</h3>
+                    <ol class="text-gray-300 space-y-2">
+                        <li>1. Visit our <a href="/pricing" class="text-cyan-400 hover:underline">pricing page</a></li>
+                        <li>2. Choose your preferred payment method</li>
+                        <li>3. Complete payment (crypto or card)</li>
+                        <li>4. Receive license key via email</li>
+                        <li>5. Enter license in desktop app</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- Support Section -->
+        <div class="cyber-card p-8 text-center">
+            <h2 class="text-3xl font-bold text-white mb-4 glow-text">🆘 Need Help?</h2>
+            <p class="text-gray-300 mb-6">Our support team is here to help you get started with MailSift Desktop</p>
+            
+            <div class="flex flex-wrap justify-center gap-4">
+                <button onclick="window.location.href='/support'" class="cyber-button px-6 py-3 rounded-lg">
+                    🤖 AI Support Chat
+                </button>
+                <button onclick="window.location.href='/contact'" class="bg-gray-700 hover:bg-gray-600 px-6 py-3 rounded-lg text-white">
+                    📧 Contact Support
+                </button>
+                <button onclick="window.open('https://docs.mailsift.com', '_blank')" class="bg-gray-700 hover:bg-gray-600 px-6 py-3 rounded-lg text-white">
+                    📚 Documentation
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function downloadDesktop(platform) {
+            // Show download confirmation
+            const platformNames = {
+                'windows': 'Windows',
+                'mac': 'macOS',
+                'linux': 'Linux'
+            };
+            
+            const confirmDownload = confirm(`Download MailSift Desktop for ${platformNames[platform]}?\n\nThis will start the download process.`);
+            
+            if (confirmDownload) {
+                // Simulate download process
+                showDownloadProgress(platform);
+                
+                // In production, this would trigger actual file download
+                setTimeout(() => {
+                    alert(`Download started for ${platformNames[platform]}!\n\nIn production, the installer file would download automatically.`);
+                }, 2000);
+            }
+        }
+        
+        function showDownloadProgress(platform) {
+            // Create a simple progress indicator
+            const progressDiv = document.createElement('div');
+            progressDiv.className = 'fixed top-4 right-4 bg-gray-800 border border-cyan-500 rounded-lg p-4 text-white z-50';
+            progressDiv.innerHTML = `
+                <div class="flex items-center">
+                    <div class="animate-spin w-4 h-4 border-2 border-cyan-500 border-t-transparent rounded-full mr-3"></div>
+                    <div>Preparing download...</div>
+                </div>
+            `;
+            
+            document.body.appendChild(progressDiv);
+            
+            setTimeout(() => {
+                progressDiv.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

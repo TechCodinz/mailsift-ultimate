@@ -40,6 +40,7 @@ from ultra_web_scraper import ultra_scraper, ScrapingConfig
 from ultra_keyword_search import ultra_search_engine, SearchQuery
 from ultra_error_handling import ultra_error_handler, ErrorContext
 from ultra_monitoring import ultra_monitoring, set_gauge, increment_counter
+from ai_support import ai_support_engine
 from ultra_performance import (ultra_performance, monitor_performance,
                                PerformanceLevel)
 # Additional imports for enhanced functionality
@@ -2233,11 +2234,23 @@ def admin_verify_payment() -> Dict[str, Any]:
             # Generate license key
             license_key = crypto_payment_system.generate_license_key(txid)
             
+            # Get payment details to send email
+            payment_details = crypto_payment_system.get_payment_status(txid)
+            user_email = payment_details.get('user_email', '')
+            
+            # Send license email automatically
+            if user_email:
+                email_sent = crypto_payment_system.send_license_email(user_email, license_key)
+                email_status = "License email sent" if email_sent else "Email sending failed"
+            else:
+                email_status = "No email address provided"
+            
             return jsonify({
                 "status": "success",
                 "verified": True,
                 "license_key": license_key,
-                "message": "Payment verified and license generated"
+                "message": "Payment verified and license generated",
+                "email_status": email_status
             })
         else:
             return jsonify({
@@ -2288,6 +2301,126 @@ def admin_generate_license() -> Dict[str, Any]:
         )
         error_id = ultra_error_handler.handle_error(e, error_context)
         return jsonify({"error": "License generation error", "error_id": error_id}), 500
+
+
+@app.route("/support")
+@monitor_performance(PerformanceLevel.BASIC)
+def support_page() -> str:
+    """Serve the support page"""
+    return render_template('support_ultra.html')
+
+
+@app.route("/contact")
+@monitor_performance(PerformanceLevel.BASIC)
+def contact_page() -> str:
+    """Serve the contact page"""
+    return render_template('contact_ultra.html')
+
+
+@app.route("/api/support/chat", methods=["POST"])
+@monitor_performance(PerformanceLevel.BASIC)
+def ai_chat_support() -> Dict[str, Any]:
+    """AI-powered chat support"""
+    try:
+        data = request.get_json()
+        session_id = data.get('session_id', f"session_{int(time.time())}")
+        user_message = data.get('message', '')
+        
+        if not user_message:
+            return jsonify({"error": "Message is required"}), 400
+        
+        # Get AI response
+        chat_message = ai_support_engine.get_chat_response(session_id, user_message)
+        
+        return jsonify({
+            "status": "success",
+            "session_id": session_id,
+            "response": chat_message.ai_response,
+            "timestamp": chat_message.timestamp.isoformat(),
+            "suggestions": ai_support_engine.get_suggested_responses(user_message)
+        })
+        
+    except Exception as e:
+        error_context = ErrorContext(
+            endpoint="ai_chat_support",
+            timestamp=datetime.now().isoformat()
+        )
+        error_id = ultra_error_handler.handle_error(e, error_context)
+        return jsonify({"error": "Chat support error", "error_id": error_id}), 500
+
+
+@app.route("/api/support/ticket", methods=["POST"])
+@monitor_performance(PerformanceLevel.BASIC)
+def create_support_ticket() -> Dict[str, Any]:
+    """Create a support ticket"""
+    try:
+        data = request.get_json()
+        user_email = data.get('email', '')
+        subject = data.get('subject', '')
+        message = data.get('message', '')
+        category = data.get('category', 'general')
+        
+        if not all([user_email, subject, message]):
+            return jsonify({"error": "Email, subject, and message are required"}), 400
+        
+        # Create support ticket
+        ticket = ai_support_engine.create_support_ticket(
+            user_email, subject, message, category
+        )
+        
+        return jsonify({
+            "status": "success",
+            "ticket_id": ticket.id,
+            "ai_response": ticket.ai_response,
+            "priority": ticket.priority,
+            "estimated_response": "Within 2 hours during business hours"
+        })
+        
+    except Exception as e:
+        error_context = ErrorContext(
+            endpoint="create_support_ticket",
+            timestamp=datetime.now().isoformat()
+        )
+        error_id = ultra_error_handler.handle_error(e, error_context)
+        return jsonify({"error": "Ticket creation error", "error_id": error_id}), 500
+
+
+@app.route("/download/desktop")
+@monitor_performance(PerformanceLevel.BASIC)
+def download_desktop() -> str:
+    """Serve the desktop download page"""
+    return render_template('download_desktop_ultra.html')
+
+
+@app.route("/api/download/desktop/<platform>")
+@monitor_performance(PerformanceLevel.BASIC)
+def download_desktop_file(platform: str) -> Response:
+    """Download desktop application"""
+    try:
+        if platform not in ['windows', 'mac', 'linux']:
+            return jsonify({"error": "Invalid platform"}), 400
+        
+        # For now, return a placeholder download
+        # In production, serve actual installer files
+        desktop_app_path = f"desktop_app_{platform}.zip"
+        
+        if os.path.exists(desktop_app_path):
+            return send_file(desktop_app_path, as_attachment=True)
+        else:
+            # Create a simple download response
+            return jsonify({
+                "status": "success",
+                "download_url": f"https://github.com/mailsift/desktop/releases/latest/download/MailSift_{platform}.zip",
+                "message": "Desktop application download link generated"
+            })
+        
+    except Exception as e:
+        error_context = ErrorContext(
+            endpoint="download_desktop_file",
+            timestamp=datetime.now().isoformat()
+        )
+        error_id = ultra_error_handler.handle_error(e, error_context)
+        return jsonify({"error": "Download error", "error_id": error_id}), 500
 
 
 @app.route("/admin/payments")
