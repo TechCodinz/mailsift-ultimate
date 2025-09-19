@@ -34,6 +34,7 @@ import dns.resolver
 from bs4 import BeautifulSoup
 import smtplib
 from crypto_payments import crypto_payment_system
+from ultra_email_extractor import ultra_extractor
 # Additional imports for enhanced functionality
 
 # Configure logging
@@ -984,6 +985,143 @@ def extract_ultimate() -> Dict[str, Any]:
             },
         }
     )
+
+
+@app.route("/api/v5/ultra-extract", methods=["POST"])
+@limiter.limit("50 per minute")
+def ultra_extract() -> Dict[str, Any]:
+    """ULTRA-ADVANCED extraction with world-class accuracy"""
+    start_time = time.time()
+    data = request.get_json()
+
+    # Get user
+    user_id = session.get("user_id", "anonymous")
+
+    # Check credits
+    if not _check_credits(user_id, 1):
+        return (
+            jsonify({"error": "Insufficient credits", "upgrade_url": "/pricing"}),
+            402,
+        )
+
+    # ULTRA EXTRACTION - Multiple sources with maximum accuracy
+    all_results = []
+    total_emails_found = 0
+
+    # 1. TEXT EXTRACTION - Ultra-advanced
+    if data.get("text"):
+        text_result = ultra_extractor.extract_emails_ultra(data["text"], "text")
+        all_results.append(text_result)
+        total_emails_found += text_result.unique_valid
+
+    # 2. HTML EXTRACTION - Advanced HTML parsing
+    if data.get("html"):
+        html_result = ultra_extractor.extract_emails_ultra(data["html"], "html")
+        all_results.append(html_result)
+        total_emails_found += html_result.unique_valid
+
+    # 3. URL EXTRACTION - Multi-threaded web scraping
+    if data.get("urls"):
+        urls = data["urls"][:10]  # Limit to 10 URLs for performance
+        url_results = []
+        
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            futures = [
+                executor.submit(_extract_from_url_ultra, url) 
+                for url in urls
+            ]
+            
+            for future in futures:
+                try:
+                    url_result = future.result(timeout=15)
+                    if url_result:
+                        url_results.append(url_result)
+                        total_emails_found += url_result.unique_valid
+                except Exception as e:
+                    logger.error(f"URL extraction error: {e}")
+        
+        all_results.extend(url_results)
+
+    # 4. COMBINE AND DEDUPLICATE
+    combined_emails = set()
+    for result in all_results:
+        combined_emails.update(result.emails)
+    
+    # 5. ADVANCED INTELLIGENCE ANALYSIS
+    intelligence_results = []
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = [
+            executor.submit(intelligence_engine.analyze_email, email)
+            for email in combined_emails
+        ]
+
+        for future in futures:
+            try:
+                intelligence = future.result(timeout=30)
+                intelligence_results.append(intelligence)
+            except Exception as e:
+                logger.error(f"Analysis error: {e}")
+
+    # 6. VERIFICATION WITH CRYPTO ENGINE
+    verified_emails = []
+    for email in combined_emails:
+        verification = verification_engine.verify_email(email)
+        if verification['is_valid']:
+            verified_emails.append(email)
+
+    # Track usage
+    _deduct_credits(user_id, len(verified_emails))
+    _track_extraction(user_id, len(verified_emails))
+
+    processing_time = time.time() - start_time
+
+    return jsonify(
+        {
+            "success": True,
+            "emails": verified_emails,
+            "total_found": total_emails_found,
+            "total_verified": len(verified_emails),
+            "intelligence": intelligence_results,
+            "extraction_details": {
+                "sources_processed": len(all_results),
+                "extraction_methods": {
+                    "text": sum(1 for r in all_results if r.context_info.get('has_html') == False),
+                    "html": sum(1 for r in all_results if r.context_info.get('has_html') == True),
+                    "obfuscated": sum(1 for r in all_results if r.context_info.get('has_obfuscation') == True),
+                    "encoded": sum(1 for r in all_results if r.context_info.get('has_encoding') == True)
+                },
+                "confidence_scores": {
+                    email: max([r.confidence_scores.get(email, 0) for r in all_results if email in r.confidence_scores])
+                    for email in verified_emails
+                }
+            },
+            "processing_time": round(processing_time, 2),
+            "credits_used": len(verified_emails),
+            "credits_remaining": _get_credits(user_id),
+            "accuracy_score": round(len(verified_emails) / max(total_emails_found, 1) * 100, 2)
+        }
+    )
+
+
+def _extract_from_url_ultra(url: str):
+    """Extract emails from URL with advanced error handling"""
+    try:
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        response = requests.get(url, timeout=15, headers=headers)
+        response.raise_for_status()
+        
+        # Detect content type
+        content_type = response.headers.get('content-type', '').lower()
+        if 'html' in content_type:
+            return ultra_extractor.extract_emails_ultra(response.text, "html")
+        else:
+            return ultra_extractor.extract_emails_ultra(response.text, "text")
+            
+    except Exception as e:
+        logger.error(f"URL extraction failed for {url}: {e}")
+        return None
 
 
 @app.route("/api/v5/bulk", methods=["POST"])
