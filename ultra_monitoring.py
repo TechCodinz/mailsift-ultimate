@@ -8,9 +8,9 @@ import json
 import threading
 import psutil
 import requests
-from typing import Dict, Any, List, Optional, Callable
+from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, asdict
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
 import logging
 import smtplib
@@ -268,7 +268,7 @@ class UltraMonitoringSystem:
                 try:
                     self.redis_client.ping()
                     self._record_metric('redis_connected', 1, MetricType.GAUGE)
-                except:
+                except Exception:
                     self._record_metric('redis_connected', 0, MetricType.GAUGE)
                     
             # Active sessions (placeholder)
