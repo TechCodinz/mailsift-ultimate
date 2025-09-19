@@ -1101,7 +1101,8 @@ def ultra_extract() -> Dict[str, Any]:
                     "encoded": sum(1 for r in all_results if r.context_info.get('has_encoding'))
                 },
                 "confidence_scores": {
-                    email: max([r.confidence_scores.get(email, 0) for r in all_results if email in r.confidence_scores])
+                    email: max([r.confidence_scores.get(email, 0) for r in all_results
+                                if email in r.confidence_scores])
                     for email in verified_emails
                 }
             },
@@ -1565,9 +1566,11 @@ def industry_specific_search() -> Dict[str, Any]:
                     "total_industry_emails": len(industry_emails),
                     "results": results_data,
                     "summary": {"found": len(search_results),
-                                "average_confidence": round(sum(r.confidence for r in search_results) / len(search_results),
-                                                            3) if search_results else 0,
-                                "top_keywords": list({kw for r in search_results for kw in r.matched_keywords})[:10]},
+                                "average_confidence": round(
+                                    sum(r.confidence for r in search_results) / len(search_results),
+                                    3) if search_results else 0,
+                                "top_keywords": list({kw for r in search_results
+                                                      for kw in r.matched_keywords})[:10]},
                     "processing_time": round(processing_time,
                                              2),
                     "credits_used": len(search_results),
