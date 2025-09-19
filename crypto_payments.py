@@ -397,7 +397,7 @@ class UltraCryptoPaymentSystem:
         """Verify Solana payment"""
         return self._verify_generic_payment(txid, 'SOL')
 
-    def _verify_generic_payment(self, txid: str, 
+    def _verify_generic_payment(self, txid: str,
                                 currency: str) -> Dict[str, Any]:
         """Generic payment verification"""
         # For now, return basic verification

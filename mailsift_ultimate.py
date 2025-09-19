@@ -29,6 +29,7 @@ import sqlite3
 import redis
 import stripe
 import logging
+import psutil
 from email_validator import validate_email
 import dns.resolver
 from bs4 import BeautifulSoup
@@ -36,9 +37,9 @@ import smtplib
 from crypto_payments import crypto_payment_system
 from ultra_email_extractor import ultra_extractor
 from ultra_web_scraper import ultra_scraper, ScrapingConfig
-from ultra_keyword_search import ultra_search_engine, SearchQuery, SearchResult
-from ultra_error_handling import ultra_error_handler, handle_errors, ErrorSeverity, ErrorCategory, ErrorContext
-from ultra_monitoring import ultra_monitoring, record_metric, increment_counter, set_gauge, AlertLevel
+from ultra_keyword_search import ultra_search_engine, SearchQuery
+from ultra_error_handling import ultra_error_handler, ErrorContext
+from ultra_monitoring import ultra_monitoring
 from ultra_performance import ultra_performance, monitor_performance, PerformanceLevel
 # Additional imports for enhanced functionality
 
@@ -1090,10 +1091,10 @@ def ultra_extract() -> Dict[str, Any]:
             "extraction_details": {
                 "sources_processed": len(all_results),
                 "extraction_methods": {
-                    "text": sum(1 for r in all_results if r.context_info.get('has_html') == False),
-                    "html": sum(1 for r in all_results if r.context_info.get('has_html') == True),
-                    "obfuscated": sum(1 for r in all_results if r.context_info.get('has_obfuscation') == True),
-                    "encoded": sum(1 for r in all_results if r.context_info.get('has_encoding') == True)
+                    "text": sum(1 for r in all_results if not r.context_info.get('has_html')),
+                    "html": sum(1 for r in all_results if r.context_info.get('has_html')),
+                    "obfuscated": sum(1 for r in all_results if r.context_info.get('has_obfuscation')),
+                    "encoded": sum(1 for r in all_results if r.context_info.get('has_encoding'))
                 },
                 "confidence_scores": {
                     email: max([r.confidence_scores.get(email, 0) for r in all_results if email in r.confidence_scores])
@@ -2167,7 +2168,7 @@ def health() -> Dict[str, Any]:
             
         # Crypto Payments health
         try:
-            wallets = crypto_payment_system.get_available_wallets()
+            crypto_payment_system.get_available_wallets()
             services_status["crypto_payments"] = "healthy"
         except Exception as e:
             services_status["crypto_payments"] = f"unhealthy: {str(e)}"
@@ -2175,7 +2176,7 @@ def health() -> Dict[str, Any]:
         # Ultra Extractors health
         try:
             # Test ultra extractor
-            test_result = ultra_extractor.extract_emails_ultra("test@example.com", "text")
+            ultra_extractor.extract_emails_ultra("test@example.com", "text")
             services_status["ultra_extractor"] = "healthy"
         except Exception as e:
             services_status["ultra_extractor"] = f"unhealthy: {str(e)}"
@@ -2183,7 +2184,7 @@ def health() -> Dict[str, Any]:
         # Ultra Scraper health
         try:
             # Test ultra scraper
-            test_result = ultra_scraper.scrape_single_url("https://httpbin.org/get")
+            ultra_scraper.scrape_single_url("https://httpbin.org/get")
             services_status["ultra_scraper"] = "healthy"
         except Exception as e:
             services_status["ultra_scraper"] = f"unhealthy: {str(e)}"
@@ -2192,7 +2193,7 @@ def health() -> Dict[str, Any]:
         try:
             # Test ultra search
             test_query = SearchQuery(keywords=["test"], search_type="exact")
-            test_result = ultra_search_engine.search_emails(test_query)
+            ultra_search_engine.search_emails(test_query)
             services_status["ultra_search"] = "healthy"
         except Exception as e:
             services_status["ultra_search"] = f"unhealthy: {str(e)}"
