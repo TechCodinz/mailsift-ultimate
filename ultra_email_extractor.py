@@ -4,10 +4,9 @@ The most advanced email extraction system ever built
 """
 
 import re
-import html
 import base64
 import urllib.parse
-from typing import List, Tuple, Dict, Set, Optional, Any
+from typing import List, Tuple, Dict, Set, Any
 from dataclasses import dataclass
 from bs4 import BeautifulSoup
 import logging

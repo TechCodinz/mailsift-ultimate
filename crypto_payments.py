@@ -4,7 +4,6 @@ Supports 20+ cryptocurrencies with real-time verification
 """
 
 import os
-import json
 import hmac
 import hashlib
 import time

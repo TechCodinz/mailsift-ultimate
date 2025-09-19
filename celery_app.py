@@ -4,14 +4,12 @@ The most advanced background task processing system ever built
 """
 
 import os
-import time
 import logging
-from typing import Dict, Any, List, Optional
-from datetime import datetime, timedelta
+from typing import Dict, Any
+from datetime import datetime
 from celery import Celery
 from celery.signals import task_prerun, task_postrun, task_failure
 import redis
-from dataclasses import asdict
 
 # Configure Celery
 celery_app = Celery(

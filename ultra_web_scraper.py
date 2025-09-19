@@ -6,18 +6,13 @@ The most advanced web scraping system ever built for email extraction
 import requests
 import time
 import random
-import json
 import re
-from typing import List, Dict, Optional, Any, Tuple
+from typing import List, Dict, Optional, Any
 from dataclasses import dataclass
-from urllib.parse import urljoin, urlparse, parse_qs
+from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import threading
-from queue import Queue
-import base64
-import hashlib
 
 logger = logging.getLogger(__name__)
 

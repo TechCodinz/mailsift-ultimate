@@ -3,17 +3,14 @@
 The most advanced testing system ever built
 """
 
-import pytest
 import unittest
 import time
-import json
-from unittest.mock import Mock, patch, MagicMock
-from typing import Dict, Any, List
+from unittest.mock import Mock, patch
 
 # Import our ultra systems
 from ultra_error_handling import UltraErrorHandler, ErrorSeverity, ErrorCategory, ErrorContext
 from ultra_monitoring import UltraMonitoringSystem, AlertLevel
-from ultra_performance import UltraPerformanceEngine, PerformanceLevel
+from ultra_performance import UltraPerformanceEngine
 from ultra_email_extractor import UltraEmailExtractor
 from ultra_web_scraper import UltraWebScraper
 from ultra_keyword_search import UltraKeywordSearchEngine, SearchQuery
