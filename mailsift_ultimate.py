@@ -37,6 +37,9 @@ from crypto_payments import crypto_payment_system
 from ultra_email_extractor import ultra_extractor
 from ultra_web_scraper import ultra_scraper, ScrapingConfig
 from ultra_keyword_search import ultra_search_engine, SearchQuery, SearchResult
+from ultra_error_handling import ultra_error_handler, handle_errors, ErrorSeverity, ErrorCategory, ErrorContext
+from ultra_monitoring import ultra_monitoring, record_metric, increment_counter, set_gauge, AlertLevel
+from ultra_performance import ultra_performance, monitor_performance, PerformanceLevel
 # Additional imports for enhanced functionality
 
 # Configure logging
@@ -2123,29 +2126,232 @@ def get_stats() -> Dict[str, Any]:
 
 
 @app.route("/health")
+@monitor_performance(PerformanceLevel.BASIC)
 def health() -> Dict[str, Any]:
-    """Health check endpoint"""
-    checks = {
-        "api": "healthy",
-        "database": _check_database(),
-        "redis": "healthy" if REDIS_AVAILABLE else "unavailable",
-        "ml_engine": "loaded",
-    }
-
-    status = (
-        "healthy"
-        if all(v in ["healthy", "loaded"] for v in checks.values())
-        else "degraded"
-    )
-
-    return jsonify(
-        {
-            "status": status,
-            "checks": checks,
-            "version": "5.0.0",
-            "timestamp": datetime.utcnow().isoformat(),
+    """Ultra-advanced health check endpoint"""
+    try:
+        start_time = time.time()
+        
+        # Get comprehensive system status
+        system_status = ultra_monitoring.get_system_status()
+        
+        # Check all critical services
+        services_status = {}
+        
+        # Database health
+        try:
+            conn = sqlite3.connect("mailsift_ultimate.db")
+            conn.execute("SELECT 1")
+            conn.close()
+            services_status["database"] = "healthy"
+        except Exception as e:
+            services_status["database"] = f"unhealthy: {str(e)}"
+            
+        # Redis health
+        try:
+            if redis_client:
+                redis_client.ping()
+                services_status["redis"] = "healthy"
+            else:
+                services_status["redis"] = "not_configured"
+        except Exception as e:
+            services_status["redis"] = f"unhealthy: {str(e)}"
+            
+        # AI Engine health
+        try:
+            # Test AI engine
+            test_result = intelligence_engine.analyze_email("test@example.com")
+            services_status["ai_engine"] = "healthy"
+        except Exception as e:
+            services_status["ai_engine"] = f"unhealthy: {str(e)}"
+            
+        # Crypto Payments health
+        try:
+            wallets = crypto_payment_system.get_available_wallets()
+            services_status["crypto_payments"] = "healthy"
+        except Exception as e:
+            services_status["crypto_payments"] = f"unhealthy: {str(e)}"
+            
+        # Ultra Extractors health
+        try:
+            # Test ultra extractor
+            test_result = ultra_extractor.extract_emails_ultra("test@example.com", "text")
+            services_status["ultra_extractor"] = "healthy"
+        except Exception as e:
+            services_status["ultra_extractor"] = f"unhealthy: {str(e)}"
+            
+        # Ultra Scraper health
+        try:
+            # Test ultra scraper
+            test_result = ultra_scraper.scrape_single_url("https://httpbin.org/get")
+            services_status["ultra_scraper"] = "healthy"
+        except Exception as e:
+            services_status["ultra_scraper"] = f"unhealthy: {str(e)}"
+            
+        # Ultra Search health
+        try:
+            # Test ultra search
+            test_query = SearchQuery(keywords=["test"], search_type="exact")
+            test_result = ultra_search_engine.search_emails(test_query)
+            services_status["ultra_search"] = "healthy"
+        except Exception as e:
+            services_status["ultra_search"] = f"unhealthy: {str(e)}"
+            
+        # Determine overall health
+        unhealthy_services = [s for s in services_status.values() if "unhealthy" in s]
+        overall_status = "healthy" if not unhealthy_services else "degraded"
+        
+        if len(unhealthy_services) > 2:
+            overall_status = "unhealthy"
+            
+        response_time = (time.time() - start_time) * 1000
+        
+        # Record health check metrics
+        set_gauge("health_check_duration_ms", response_time)
+        set_gauge("unhealthy_services_count", len(unhealthy_services))
+        increment_counter("health_checks_total", labels={"status": overall_status})
+        
+        health_response = {
+            "status": overall_status,
+            "timestamp": datetime.now().isoformat(),
+            "version": "5.0.0-ultra",
+            "response_time_ms": round(response_time, 2),
+            "services": services_status,
+            "system_metrics": {
+                "cpu_percent": psutil.cpu_percent(),
+                "memory_percent": psutil.virtual_memory().percent,
+                "disk_percent": psutil.disk_usage('/').percent,
+                "active_connections": len(ultra_monitoring.metrics),
+                "error_count": sum(ultra_error_handler.error_stats.values())
+            },
+            "performance_metrics": ultra_performance.get_performance_report(),
+            "monitoring_status": system_status
         }
-    ), (200 if status == "healthy" else 503)
+        
+        status_code = 200 if overall_status == "healthy" else 503
+        return jsonify(health_response), status_code
+        
+    except Exception as e:
+        # Record health check error
+        error_context = ErrorContext(
+            endpoint="health",
+            timestamp=datetime.now().isoformat()
+        )
+        error_id = ultra_error_handler.handle_error(e, error_context)
+        
+        increment_counter("health_checks_total", labels={"status": "error"})
+        
+        return jsonify({
+            "status": "error",
+            "timestamp": datetime.now().isoformat(),
+            "error_id": error_id,
+            "message": "Health check failed"
+        }), 500
+
+
+@app.route("/api/v5/monitoring/status")
+@monitor_performance(PerformanceLevel.BASIC)
+def get_monitoring_status() -> Dict[str, Any]:
+    """Get comprehensive monitoring status"""
+    try:
+        return jsonify({
+            "success": True,
+            "monitoring_status": ultra_monitoring.get_system_status(),
+            "performance_report": ultra_performance.get_performance_report(),
+            "error_stats": ultra_error_handler.get_error_stats(),
+            "timestamp": datetime.now().isoformat()
+        })
+    except Exception as e:
+        error_context = ErrorContext(
+            endpoint="monitoring_status",
+            timestamp=datetime.now().isoformat()
+        )
+        error_id = ultra_error_handler.handle_error(e, error_context)
+        
+        return jsonify({
+            "success": False,
+            "error_id": error_id,
+            "message": "Failed to get monitoring status"
+        }), 500
+
+
+@app.route("/api/v5/monitoring/metrics")
+@monitor_performance(PerformanceLevel.BASIC)
+def get_metrics() -> Dict[str, Any]:
+    """Get performance metrics"""
+    try:
+        return jsonify({
+            "success": True,
+            "metrics": ultra_monitoring.get_system_status()["metrics"],
+            "performance_metrics": ultra_performance.get_performance_report(),
+            "slow_functions": ultra_performance.get_slow_functions(threshold=0.5),
+            "timestamp": datetime.now().isoformat()
+        })
+    except Exception as e:
+        error_context = ErrorContext(
+            endpoint="get_metrics",
+            timestamp=datetime.now().isoformat()
+        )
+        error_id = ultra_error_handler.handle_error(e, error_context)
+        
+        return jsonify({
+            "success": False,
+            "error_id": error_id,
+            "message": "Failed to get metrics"
+        }), 500
+
+
+@app.route("/api/v5/monitoring/alerts")
+@monitor_performance(PerformanceLevel.BASIC)
+def get_alerts() -> Dict[str, Any]:
+    """Get system alerts"""
+    try:
+        system_status = ultra_monitoring.get_system_status()
+        
+        return jsonify({
+            "success": True,
+            "alerts": system_status["alerts"],
+            "timestamp": datetime.now().isoformat()
+        })
+    except Exception as e:
+        error_context = ErrorContext(
+            endpoint="get_alerts",
+            timestamp=datetime.now().isoformat()
+        )
+        error_id = ultra_error_handler.handle_error(e, error_context)
+        
+        return jsonify({
+            "success": False,
+            "error_id": error_id,
+            "message": "Failed to get alerts"
+        }), 500
+
+
+@app.route("/api/v5/monitoring/resolve-alert/<alert_id>", methods=["POST"])
+@monitor_performance(PerformanceLevel.BASIC)
+def resolve_alert(alert_id: str) -> Dict[str, Any]:
+    """Resolve a system alert"""
+    try:
+        ultra_monitoring.resolve_alert(alert_id)
+        
+        return jsonify({
+            "success": True,
+            "message": f"Alert {alert_id} resolved",
+            "timestamp": datetime.now().isoformat()
+        })
+    except Exception as e:
+        error_context = ErrorContext(
+            endpoint="resolve_alert",
+            timestamp=datetime.now().isoformat()
+        )
+        error_id = ultra_error_handler.handle_error(e, error_context)
+        
+        return jsonify({
+            "success": False,
+            "error_id": error_id,
+            "message": "Failed to resolve alert"
+        }), 500
+
 
 # ======================
 # HELPER FUNCTIONS
