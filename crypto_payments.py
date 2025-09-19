@@ -465,6 +465,34 @@ class UltraCryptoPaymentSystem:
                 }
             return {}
 
+    def get_all_payments(self) -> Dict[str, Any]:
+        """Get all payment records"""
+        payments = {}
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.execute('''
+                SELECT * FROM crypto_payments ORDER BY created_at DESC
+            ''')
+            
+            for row in cursor.fetchall():
+                payment_id = row[0]
+                payments[payment_id] = {
+                    'id': row[0],
+                    'amount_usd': row[1],
+                    'amount_crypto': row[2],
+                    'currency': row[3],
+                    'wallet_address': row[4],
+                    'created_at': row[5],
+                    'expires_at': row[6],
+                    'status': row[7],
+                    'txid': row[8],
+                    'user_email': row[9],
+                    'verified_at': row[10],
+                    'license_key': row[11],
+                    'verified': row[7] == 'verified',
+                    'timestamp': row[5]
+                }
+        return payments
+
     def generate_license_key(self, payment_id: str) -> str:
         """Generate license key after payment verification"""
         # Generate secure license key

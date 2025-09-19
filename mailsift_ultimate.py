@@ -2171,6 +2171,147 @@ def get_stats() -> Dict[str, Any]:
     )
 
 
+@app.route("/admin")
+@monitor_performance(PerformanceLevel.BASIC)
+def admin_dashboard_page() -> str:
+    """Serve the admin dashboard HTML page"""
+    return render_template('admin_ultra.html')
+
+
+@app.route("/admin/api")
+@monitor_performance(PerformanceLevel.BASIC)
+def admin_dashboard() -> Dict[str, Any]:
+    """Admin dashboard for license management and payment verification"""
+    try:
+        # Get payment statistics
+        payments_data = crypto_payment_system.get_all_payments()
+        total_payments = len(payments_data)
+        verified_payments = sum(1 for p in payments_data.values() if p.get('verified', False))
+        pending_payments = total_payments - verified_payments
+        
+        # Get recent payments
+        recent_payments = sorted(
+            payments_data.values(), 
+            key=lambda x: x.get('timestamp', 0), 
+            reverse=True
+        )[:10]
+        
+        return jsonify({
+            "status": "success",
+            "admin_dashboard": {
+                "total_payments": total_payments,
+                "verified_payments": verified_payments,
+                "pending_payments": pending_payments,
+                "revenue": sum(p.get('amount', 0) for p in payments_data.values() if p.get('verified', False)),
+                "recent_payments": recent_payments
+            }
+        })
+    except Exception as e:
+        error_context = ErrorContext(
+            endpoint="admin_dashboard",
+            timestamp=datetime.now().isoformat()
+        )
+        error_id = ultra_error_handler.handle_error(e, error_context)
+        return jsonify({"error": "Admin dashboard error", "error_id": error_id}), 500
+
+
+@app.route("/admin/verify-payment", methods=["POST"])
+@monitor_performance(PerformanceLevel.BASIC)
+def admin_verify_payment() -> Dict[str, Any]:
+    """Verify a crypto payment and generate license"""
+    try:
+        data = request.get_json()
+        txid = data.get('txid')
+        
+        if not txid:
+            return jsonify({"error": "Transaction ID required"}), 400
+            
+        # Verify the payment
+        result = crypto_payment_system.verify_payment(txid)
+        
+        if result['verified']:
+            # Generate license key
+            license_key = crypto_payment_system.generate_license_key(txid)
+            
+            return jsonify({
+                "status": "success",
+                "verified": True,
+                "license_key": license_key,
+                "message": "Payment verified and license generated"
+            })
+        else:
+            return jsonify({
+                "status": "error",
+                "verified": False,
+                "message": "Payment verification failed"
+            }), 400
+            
+    except Exception as e:
+        error_context = ErrorContext(
+            endpoint="admin_verify_payment",
+            timestamp=datetime.now().isoformat()
+        )
+        error_id = ultra_error_handler.handle_error(e, error_context)
+        return jsonify({"error": "Payment verification error", "error_id": error_id}), 500
+
+
+@app.route("/admin/generate-license", methods=["POST"])
+@monitor_performance(PerformanceLevel.BASIC)
+def admin_generate_license() -> Dict[str, Any]:
+    """Manually generate a license key for a transaction"""
+    try:
+        data = request.get_json()
+        txid = data.get('txid')
+        email = data.get('email', '')
+        
+        if not txid:
+            return jsonify({"error": "Transaction ID required"}), 400
+            
+        # Generate license key
+        license_key = crypto_payment_system.generate_license_key(txid)
+        
+        # Send license via email if provided
+        if email:
+            crypto_payment_system.send_license_email(email, license_key)
+        
+        return jsonify({
+            "status": "success",
+            "license_key": license_key,
+            "email_sent": bool(email),
+            "message": "License generated successfully"
+        })
+        
+    except Exception as e:
+        error_context = ErrorContext(
+            endpoint="admin_generate_license",
+            timestamp=datetime.now().isoformat()
+        )
+        error_id = ultra_error_handler.handle_error(e, error_context)
+        return jsonify({"error": "License generation error", "error_id": error_id}), 500
+
+
+@app.route("/admin/payments")
+@monitor_performance(PerformanceLevel.BASIC)
+def admin_payments() -> Dict[str, Any]:
+    """Get all payment records for admin review"""
+    try:
+        payments = crypto_payment_system.get_all_payments()
+        
+        return jsonify({
+            "status": "success",
+            "payments": payments,
+            "total_count": len(payments)
+        })
+        
+    except Exception as e:
+        error_context = ErrorContext(
+            endpoint="admin_payments",
+            timestamp=datetime.now().isoformat()
+        )
+        error_id = ultra_error_handler.handle_error(e, error_context)
+        return jsonify({"error": "Failed to retrieve payments", "error_id": error_id}), 500
+
+
 @app.route("/health")
 @monitor_performance(PerformanceLevel.BASIC)
 def health() -> Dict[str, Any]:
