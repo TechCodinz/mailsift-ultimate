@@ -65,9 +65,11 @@ class UltraKeywordSearchEngine:
         """Load comprehensive industry keyword database"""
         return {
             'technology': [
-                'software', 'tech', 'it', 'systems', 'development', 'programming',
-                'cloud', 'saas', 'ai', 'artificial intelligence', 'machine learning',
-                'data science', 'analytics', 'cybersecurity', 'blockchain', 'crypto',
+                'software', 'tech', 'it', 'systems', 'development',
+                'programming', 'cloud', 'saas', 'ai',
+                'artificial intelligence', 'machine learning',
+                'data science', 'analytics', 'cybersecurity',
+                'blockchain', 'crypto',
                 'mobile', 'web', 'app', 'platform', 'api', 'devops', 'startup',
                 'innovation', 'digital', 'automation', 'iot', 'vr', 'ar'
             ],
@@ -79,9 +81,10 @@ class UltraKeywordSearchEngine:
                 'compliance', 'audit', 'accounting', 'cpa', 'tax', 'insurance'
             ],
             'healthcare': [
-                'health', 'healthcare', 'medical', 'medicine', 'clinic', 'hospital',
-                'pharmaceutical', 'pharma', 'biotech', 'biotechnology', 'research',
-                'clinical', 'therapy', 'treatment', 'diagnosis', 'patient care',
+                'health', 'healthcare', 'medical', 'medicine', 'clinic',
+                'hospital', 'pharmaceutical', 'pharma', 'biotech',
+                'biotechnology', 'research', 'clinical', 'therapy',
+                'treatment', 'diagnosis', 'patient care',
                 'telemedicine', 'digital health', 'medtech', 'healthtech',
                 'wellness', 'fitness', 'nutrition', 'mental health', 'dental'
             ],
@@ -331,7 +334,8 @@ class UltraKeywordSearchEngine:
             score = 0
             for keyword in keywords:
                 for email_kw in email_keywords:
-                    if keyword.lower() in email_kw.lower() or email_kw.lower() in keyword.lower():
+                    if (keyword.lower() in email_kw.lower() or
+                            email_kw.lower() in keyword.lower()):
                         score += 1
             industry_scores[industry] = score
 
@@ -490,7 +494,8 @@ class UltraKeywordSearchEngine:
                 if query.industry in self.search_index['industries']:
                     industry_candidates = set(
                         self.search_index['industries'][query.industry])
-                candidates = candidates & industry_candidates if candidates else industry_candidates
+                candidates = (candidates & industry_candidates
+                              if candidates else industry_candidates)
 
             # Filter by domain pattern
             if query.domain_pattern:
@@ -498,7 +503,8 @@ class UltraKeywordSearchEngine:
                 for domain, emails in self.search_index['domains'].items():
                     if re.search(query.domain_pattern, domain, re.IGNORECASE):
                         domain_candidates.update(emails)
-                candidates = candidates & domain_candidates if candidates else domain_candidates
+                candidates = (candidates & domain_candidates
+                              if candidates else domain_candidates)
 
         return candidates
 
@@ -524,7 +530,8 @@ class UltraKeywordSearchEngine:
             # Get suggestions from industry keywords
             for industry, keywords in self.industry_keywords.items():
                 for keyword in keywords:
-                    if partial_lower in keyword.lower() and keyword not in suggestions:
+                    if (partial_lower in keyword.lower() and
+                            keyword not in suggestions):
                         suggestions.append(keyword)
 
             # Sort by relevance and limit
@@ -553,7 +560,8 @@ class UltraKeywordSearchEngine:
             'indexed_emails': len(self.search_index['emails']),
             'indexed_keywords': len(self.search_index['keywords']),
             'industries_covered': len(self.search_index['industries']),
-            'cache_hit_rate': len(self.search_cache) / max(self.search_analytics['total_searches'], 1)
+            'cache_hit_rate': (len(self.search_cache) /
+                               max(self.search_analytics['total_searches'], 1))
         }
 
     def bulk_index_emails(
