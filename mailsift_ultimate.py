@@ -40,7 +40,8 @@ from ultra_web_scraper import ultra_scraper, ScrapingConfig
 from ultra_keyword_search import ultra_search_engine, SearchQuery
 from ultra_error_handling import ultra_error_handler, ErrorContext
 from ultra_monitoring import ultra_monitoring, set_gauge, increment_counter
-from ultra_performance import ultra_performance, monitor_performance, PerformanceLevel
+from ultra_performance import (ultra_performance, monitor_performance,
+                                PerformanceLevel)
 # Additional imports for enhanced functionality
 
 # Configure logging
@@ -173,7 +174,7 @@ class EmailIntelligence:
 class EmailVerificationEngine:
     """Professional email verification with bounce detection."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.disposable_domains = self._load_disposable_domains()
         self.spam_traps = self._load_spam_traps()
 
@@ -1112,11 +1113,13 @@ def ultra_extract() -> Dict[str, Any]:
     )
 
 
-def _extract_from_url_ultra(url: str):
+def _extract_from_url_ultra(url: str) -> Dict[str, Any]:
     """Extract emails from URL with advanced error handling"""
     try:
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            'User-Agent': ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                           'AppleWebKit/537.36 (KHTML, like Gecko) '
+                           'Chrome/91.0.4472.124 Safari/537.36')
         }
         response = requests.get(url, timeout=15, headers=headers)
         response.raise_for_status()
