@@ -153,8 +153,9 @@ class UltraErrorHandler:
             )
 
             sentry_sdk.init(
-                dsn=os.environ['SENTRY_DSN'], integrations=[
-                    FlaskIntegration(), sentry_logging], traces_sample_rate=float(
+                dsn=os.environ['SENTRY_DSN'],
+                integrations=[FlaskIntegration(), sentry_logging],
+                traces_sample_rate=float(
                     os.environ.get(
                         'SENTRY_TRACES', '0.1')), environment=os.environ.get(
                     'FLASK_ENV', 'development'), release=os.environ.get(
@@ -186,7 +187,8 @@ class UltraErrorHandler:
         """Analyze error patterns for insights"""
         # Create pattern hash
         pattern_hash = hashlib.md5(
-            f"{error_report.category.value}:{error_report.exception_type}:{error_report.message[:100]}".encode()
+            f"{error_report.category.value}:{error_report.exception_type}:"
+            f"{error_report.message[:100]}".encode()
         ).hexdigest()
 
         self.error_patterns[pattern_hash] += 1
@@ -202,8 +204,8 @@ class UltraErrorHandler:
 
         # Check cooldown
         now = time.time()
-        if now - \
-                self.alert_cooldowns[severity.value] < 300:  # 5 minutes cooldown
+        # 5 minutes cooldown
+        if now - self.alert_cooldowns[severity.value] < 300:
             return
 
         # Check threshold
@@ -295,7 +297,8 @@ class UltraErrorHandler:
             return ErrorCategory.AUTHENTICATION
 
         # Authorization errors
-        if 'permission' in message or 'access' in message or 'forbidden' in message:
+        if ('permission' in message or 'access' in message or
+                'forbidden' in message):
             return ErrorCategory.AUTHORIZATION
 
         # Rate limiting errors
@@ -303,19 +306,23 @@ class UltraErrorHandler:
             return ErrorCategory.RATE_LIMIT
 
         # External API errors
-        if 'api' in message or 'request' in message or 'http' in message:
+        if ('api' in message or 'request' in message or
+                'http' in message):
             return ErrorCategory.EXTERNAL_API
 
         # Database errors
-        if 'database' in message or 'sql' in message or 'connection' in message:
+        if ('database' in message or 'sql' in message or
+                'connection' in message):
             return ErrorCategory.DATABASE
 
         # Network errors
-        if 'network' in message or 'timeout' in message or 'connection' in message:
+        if ('network' in message or 'timeout' in message or
+                'connection' in message):
             return ErrorCategory.NETWORK
 
         # Validation errors
-        if 'validation' in message or 'invalid' in message or 'format' in message:
+        if ('validation' in message or 'invalid' in message or
+                'format' in message):
             return ErrorCategory.VALIDATION
 
         return ErrorCategory.UNKNOWN
@@ -326,7 +333,8 @@ class UltraErrorHandler:
         try:
             # Generate unique error ID
             error_id = hashlib.md5(
-                f"{time.time()}:{id(exception)}:{traceback.format_exc()}".encode()
+                f"{time.time()}:{id(exception)}:"
+                f"{traceback.format_exc()}".encode()
             ).hexdigest()[:16]
 
             # Determine severity and category
@@ -417,8 +425,9 @@ class UltraErrorHandler:
                                     if report.category == category)
                 for category in ErrorCategory
             },
-            'top_patterns': dict(sorted(self.error_patterns.items(),
-                                        key=lambda x: x[1], reverse=True)[:10]),
+            'top_patterns': dict(sorted(
+                self.error_patterns.items(),
+                key=lambda x: x[1], reverse=True)[:10]),
             'recent_errors': [
                 asdict(report) for report in
                 sorted(self.error_reports.values(),
