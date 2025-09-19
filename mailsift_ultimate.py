@@ -1392,10 +1392,14 @@ def ultra_keyword_search() -> Dict[str, Any]:
                                      "max_results": max_results},
                     "results": results_data,
                     "summary": {"total_found": len(search_results),
-                                "exact_matches": len([r for r in search_results if r.match_type == 'exact']),
-                                "fuzzy_matches": len([r for r in search_results if r.match_type == 'fuzzy']),
-                                "semantic_matches": len([r for r in search_results if r.match_type == 'semantic']),
-                                "contextual_matches": len([r for r in search_results if r.match_type == 'contextual']),
+                                "exact_matches": len([r for r in search_results
+                                                     if r.match_type == 'exact']),
+                                "fuzzy_matches": len([r for r in search_results
+                                                     if r.match_type == 'fuzzy']),
+                                "semantic_matches": len([r for r in search_results
+                                                        if r.match_type == 'semantic']),
+                                "contextual_matches": len([r for r in search_results
+                                                          if r.match_type == 'contextual']),
                                 "average_confidence": round(sum(r.confidence for r in search_results) / len(search_results),
                                                             3) if search_results else 0},
                     "processing_time": round(processing_time,
@@ -1710,8 +1714,10 @@ def _export_excel(emails: List[str]) -> Response:
                     'Domain': intelligence.domain,
                     'Risk_Score': intelligence.risk_score,
                     'Confidence': intelligence.confidence,
-                    'Company': intelligence.domain_info.get('company', '') if intelligence.domain_info else '',
-                    'Industry': intelligence.domain_info.get('industry', '') if intelligence.domain_info else '',
+                    'Company': (intelligence.domain_info.get('company', '')
+                                if intelligence.domain_info else ''),
+                    'Industry': (intelligence.domain_info.get('industry', '')
+                                 if intelligence.domain_info else ''),
                     'Tags': ', '.join(intelligence.tags) if intelligence.tags else ''
                 })
 
