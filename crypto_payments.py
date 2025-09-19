@@ -17,6 +17,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class CryptoWallet:
     """Crypto wallet configuration"""
@@ -26,6 +27,7 @@ class CryptoWallet:
     network: str
     min_amount: float
     usd_rate: float = 0.0
+
 
 @dataclass
 class PaymentRequest:
@@ -41,15 +43,16 @@ class PaymentRequest:
     txid: Optional[str] = None
     user_email: Optional[str] = None
 
+
 class UltraCryptoPaymentSystem:
     """Ultra-advanced crypto payment system with instant verification"""
-    
+
     def __init__(self):
         self.wallets = self._load_crypto_wallets()
         self.api_keys = self._load_api_keys()
         self.db_path = os.environ.get('MAILSIFT_SQLITE_DB', 'payments.db')
         self._init_database()
-        
+
     def _load_crypto_wallets(self) -> Dict[str, CryptoWallet]:
         """Load all supported crypto wallets"""
         return {
@@ -134,7 +137,7 @@ class UltraCryptoPaymentSystem:
                 usd_rate=0.0
             )
         }
-    
+
     def _load_api_keys(self) -> Dict[str, str]:
         """Load API keys for price feeds and verification"""
         return {
@@ -144,7 +147,7 @@ class UltraCryptoPaymentSystem:
             'etherscan': os.environ.get('ETHERSCAN_API_KEY', ''),
             'tronapi': os.environ.get('TRONAPI_KEY', '')
         }
-    
+
     def _init_database(self):
         """Initialize crypto payments database"""
         with sqlite3.connect(self.db_path) as conn:
@@ -164,7 +167,7 @@ class UltraCryptoPaymentSystem:
                     license_key TEXT
                 )
             ''')
-    
+
     def get_crypto_rates(self) -> Dict[str, float]:
         """Get real-time crypto rates"""
         try:
@@ -173,11 +176,9 @@ class UltraCryptoPaymentSystem:
                 'https://api.coingecko.com/api/v3/simple/price',
                 params={
                     'ids': 'bitcoin,ethereum,tether,binancecoin,matic-network,solana,cardano,polkadot,avalanche-2',
-                    'vs_currencies': 'usd'
-                },
-                timeout=10
-            )
-            
+                    'vs_currencies': 'usd'},
+                timeout=10)
+
             if response.status_code == 200:
                 data = response.json()
                 return {
@@ -193,7 +194,7 @@ class UltraCryptoPaymentSystem:
                 }
         except Exception as e:
             logger.error(f"Failed to fetch crypto rates: {e}")
-        
+
         # Fallback rates
         return {
             'BTC': 45000.0,
@@ -206,15 +207,19 @@ class UltraCryptoPaymentSystem:
             'DOT': 7.0,
             'AVAX': 25.0
         }
-    
-    def create_payment_request(self, amount_usd: float, currency: str, user_email: str = None) -> PaymentRequest:
+
+    def create_payment_request(
+            self,
+            amount_usd: float,
+            currency: str,
+            user_email: str = None) -> PaymentRequest:
         """Create a new crypto payment request"""
         if currency not in self.wallets:
             raise ValueError(f"Unsupported currency: {currency}")
-        
+
         wallet = self.wallets[currency]
         rates = self.get_crypto_rates()
-        
+
         # Calculate crypto amount
         if currency.startswith('USDT'):
             amount_crypto = amount_usd
@@ -224,11 +229,11 @@ class UltraCryptoPaymentSystem:
             if rate == 0:
                 raise ValueError(f"Unable to get rate for {symbol}")
             amount_crypto = amount_usd / rate
-        
+
         # Create payment request
         payment_id = self._generate_payment_id()
         now = datetime.now()
-        
+
         payment = PaymentRequest(
             id=payment_id,
             amount_usd=amount_usd,
@@ -239,12 +244,12 @@ class UltraCryptoPaymentSystem:
             expires_at=now + timedelta(hours=24),
             user_email=user_email
         )
-        
+
         # Save to database
         self._save_payment_request(payment)
-        
+
         return payment
-    
+
     def verify_payment(self, txid: str, currency: str) -> Dict[str, Any]:
         """Verify crypto payment with blockchain APIs"""
         try:
@@ -265,7 +270,7 @@ class UltraCryptoPaymentSystem:
         except Exception as e:
             logger.error(f"Payment verification failed: {e}")
             return {'verified': False, 'error': str(e)}
-    
+
     def _verify_usdt_payment(self, txid: str, currency: str) -> Dict[str, Any]:
         """Verify USDT payment (TRC20/ERC20)"""
         try:
@@ -275,7 +280,7 @@ class UltraCryptoPaymentSystem:
                     f'https://api.trongrid.io/v1/transactions/{txid}',
                     timeout=10
                 )
-                
+
                 if response.status_code == 200:
                     data = response.json()
                     # Parse transaction details
@@ -287,7 +292,7 @@ class UltraCryptoPaymentSystem:
                         'confirmations': 1,
                         'block_height': 0
                     }
-            
+
             elif currency == 'USDT_ERC20':
                 # Etherscan API verification
                 api_key = self.api_keys.get('etherscan')
@@ -301,7 +306,7 @@ class UltraCryptoPaymentSystem:
                     },
                     timeout=10
                 )
-                
+
                 if response.status_code == 200:
                     data = response.json()
                     if data.get('result'):
@@ -313,12 +318,12 @@ class UltraCryptoPaymentSystem:
                             'confirmations': 1,
                             'block_height': 0
                         }
-            
+
             return {'verified': False, 'error': 'Transaction not found'}
-            
+
         except Exception as e:
             return {'verified': False, 'error': str(e)}
-    
+
     def _verify_btc_payment(self, txid: str) -> Dict[str, Any]:
         """Verify Bitcoin payment"""
         try:
@@ -327,21 +332,22 @@ class UltraCryptoPaymentSystem:
                 f'https://api.blockcypher.com/v1/btc/main/txs/{txid}',
                 timeout=10
             )
-            
+
             if response.status_code == 200:
                 data = response.json()
                 return {
                     'verified': True,
-                    'amount': data.get('total', 0) / 100000000,  # Convert satoshis to BTC
+                    # Convert satoshis to BTC
+                    'amount': data.get('total', 0) / 100000000,
                     'confirmations': data.get('confirmations', 0),
                     'block_height': data.get('block_height', 0)
                 }
-            
+
             return {'verified': False, 'error': 'Transaction not found'}
-            
+
         except Exception as e:
             return {'verified': False, 'error': str(e)}
-    
+
     def _verify_eth_payment(self, txid: str) -> Dict[str, Any]:
         """Verify Ethereum payment"""
         try:
@@ -356,14 +362,14 @@ class UltraCryptoPaymentSystem:
                 },
                 timeout=10
             )
-            
+
             if response.status_code == 200:
                 data = response.json()
                 if data.get('result'):
                     result = data['result']
                     amount_wei = int(result.get('value', '0'), 16)
                     amount_eth = amount_wei / 10**18
-                    
+
                     return {
                         'verified': True,
                         'amount': amount_eth,
@@ -372,25 +378,25 @@ class UltraCryptoPaymentSystem:
                         'confirmations': 1,  # Would need additional API call
                         'block_height': int(result.get('blockNumber', '0'), 16)
                     }
-            
+
             return {'verified': False, 'error': 'Transaction not found'}
-            
+
         except Exception as e:
             return {'verified': False, 'error': str(e)}
-    
+
     def _verify_bsc_payment(self, txid: str) -> Dict[str, Any]:
         """Verify BSC payment"""
         # Similar to ETH but using BSC API
         return self._verify_generic_payment(txid, 'BSC')
-    
+
     def _verify_polygon_payment(self, txid: str) -> Dict[str, Any]:
         """Verify Polygon payment"""
         return self._verify_generic_payment(txid, 'POLYGON')
-    
+
     def _verify_solana_payment(self, txid: str) -> Dict[str, Any]:
         """Verify Solana payment"""
         return self._verify_generic_payment(txid, 'SOL')
-    
+
     def _verify_generic_payment(self, txid: str, currency: str) -> Dict[str, Any]:
         """Generic payment verification"""
         # For now, return basic verification
@@ -400,17 +406,23 @@ class UltraCryptoPaymentSystem:
             'confirmations': 1,
             'note': f'Manual verification required for {currency}'
         }
-    
+
     def _generate_payment_id(self) -> str:
         """Generate unique payment ID"""
-        return f"PAY_{int(time.time())}_{hashlib.md5(str(time.time()).encode()).hexdigest()[:8]}"
-    
+        return f"PAY_{
+            int(
+                time.time())}_{
+            hashlib.md5(
+                str(
+                    time.time()).encode()).hexdigest()[
+                        :8]}"
+
     def _save_payment_request(self, payment: PaymentRequest):
         """Save payment request to database"""
         with sqlite3.connect(self.db_path) as conn:
             conn.execute('''
                 INSERT OR REPLACE INTO crypto_payments
-                (id, amount_usd, amount_crypto, currency, wallet_address, 
+                (id, amount_usd, amount_crypto, currency, wallet_address,
                  created_at, expires_at, status, user_email)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
@@ -424,14 +436,14 @@ class UltraCryptoPaymentSystem:
                 payment.status,
                 payment.user_email
             ))
-    
+
     def get_payment_status(self, payment_id: str) -> Dict[str, Any]:
         """Get payment status"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute('''
                 SELECT * FROM crypto_payments WHERE id = ?
             ''', (payment_id,))
-            
+
             row = cursor.fetchone()
             if row:
                 return {
@@ -449,7 +461,7 @@ class UltraCryptoPaymentSystem:
                     'license_key': row[11]
                 }
             return {}
-    
+
     def generate_license_key(self, payment_id: str) -> str:
         """Generate license key after payment verification"""
         # Generate secure license key
@@ -459,22 +471,22 @@ class UltraCryptoPaymentSystem:
             key_data.encode(),
             hashlib.sha256
         ).hexdigest()[:16].upper()
-        
+
         # Save to database
         with sqlite3.connect(self.db_path) as conn:
             conn.execute('''
-                UPDATE crypto_payments 
+                UPDATE crypto_payments
                 SET license_key = ?, verified_at = ?, status = 'completed'
                 WHERE id = ?
             ''', (license_key, int(time.time()), payment_id))
-        
+
         return license_key
-    
+
     def get_available_wallets(self) -> List[Dict[str, Any]]:
         """Get list of available crypto wallets"""
         rates = self.get_crypto_rates()
         wallets = []
-        
+
         for key, wallet in self.wallets.items():
             if wallet.address:  # Only show wallets with addresses
                 wallets.append({
@@ -487,7 +499,7 @@ class UltraCryptoPaymentSystem:
                     'usd_rate': rates.get(wallet.symbol, 0),
                     'min_usd': wallet.min_amount * rates.get(wallet.symbol, 1)
                 })
-        
+
         return wallets
 
 
