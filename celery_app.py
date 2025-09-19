@@ -58,59 +58,65 @@ logger = logging.getLogger(__name__)
 
 
 @task_prerun.connect
-def task_prerun_handler(sender=None, task_id=None, task=None, args=None, kwargs=None, **kwds):
+def task_prerun_handler(sender=None, task_id=None, task=None, args=None,
+                        kwargs=None, **kwds):
     """Handle task prerun events"""
     logger.info(f"Starting task {task_id}: {task.name}")
 
 
 @task_postrun.connect
-def task_postrun_handler(sender=None, task_id=None, task=None, args=None, kwargs=None, retval=None, state=None, **kwds):
+def task_postrun_handler(sender=None, task_id=None, task=None, args=None,
+                         kwargs=None, retval=None, state=None, **kwds):
     """Handle task postrun events"""
     logger.info(f"Completed task {task_id}: {task.name} with state {state}")
 
 
 @task_failure.connect
-def task_failure_handler(sender=None, task_id=None, exception=None, traceback=None, einfo=None, **kwds):
+def task_failure_handler(sender=None, task_id=None, exception=None,
+                         traceback=None, einfo=None, **kwds):
     """Handle task failure events"""
     logger.error(f"Task {task_id} failed: {exception}")
 
 
 # Redis client for task management
-redis_client = redis.from_url(os.environ.get('REDIS_URL', 'redis://localhost:6379/0'))
+redis_client = redis.from_url(
+    os.environ.get(
+        'REDIS_URL',
+        'redis://localhost:6379/0'))
 
 
 class TaskManager:
     """Advanced task management system"""
-    
+
     def __init__(self):
         self.redis_client = redis_client
         self.task_stats = {}
-        
+
     def get_task_status(self, task_id: str) -> Dict[str, Any]:
         """Get comprehensive task status"""
         try:
             result = celery_app.AsyncResult(task_id)
-            
+
             return {
                 'task_id': task_id,
                 'status': result.status,
                 'result': result.result if result.ready() else None,
                 'info': result.info,
-                'date_done': result.date_done.isoformat() if result.date_done else None,
+                'date_done': (result.date_done.isoformat()
+                              if result.date_done else None),
                 'traceback': result.traceback,
                 'successful': result.successful(),
                 'failed': result.failed(),
-                'ready': result.ready()
-            }
+                'ready': result.ready()}
         except Exception as e:
             logger.error(f"Error getting task status: {e}")
             return {'error': str(e)}
-            
+
     def get_queue_status(self) -> Dict[str, Any]:
         """Get queue status and statistics"""
         try:
             inspect = celery_app.control.inspect()
-            
+
             return {
                 'active_tasks': inspect.active(),
                 'scheduled_tasks': inspect.scheduled(),
@@ -122,7 +128,7 @@ class TaskManager:
         except Exception as e:
             logger.error(f"Error getting queue status: {e}")
             return {'error': str(e)}
-            
+
     def purge_queue(self, queue_name: str) -> bool:
         """Purge all tasks from a queue"""
         try:
@@ -132,7 +138,7 @@ class TaskManager:
         except Exception as e:
             logger.error(f"Error purging queue: {e}")
             return False
-            
+
     def revoke_task(self, task_id: str, terminate: bool = False) -> bool:
         """Revoke a running task"""
         try:
@@ -142,13 +148,13 @@ class TaskManager:
         except Exception as e:
             logger.error(f"Error revoking task: {e}")
             return False
-            
+
     def get_worker_stats(self) -> Dict[str, Any]:
         """Get worker statistics"""
         try:
             inspect = celery_app.control.inspect()
             stats = inspect.stats()
-            
+
             return {
                 'workers': stats,
                 'active_workers': len(stats) if stats else 0,
