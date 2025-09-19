@@ -48,6 +48,9 @@ plotly>=5.17.0
 cryptography>=41.0.0
 argon2-cffi>=23.0.0
 
+# Optional enhanced logging
+structlog>=23.0.0
+
 # Development
 python-dotenv>=1.0.0
 black>=23.0.0
