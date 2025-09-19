@@ -111,22 +111,27 @@ class UltraEmailExtractor:
 
             # CSS content
             'css_content': re.compile(
-                r'content\s*:\s*["\']([a-zA-Z0-9](?:[a-zA-Z0-9._-]*[a-zA-Z0-9])?@'
-                r'[a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,})["\']',
+                (r'content\s*:\s*["\']([a-zA-Z0-9](?:[a-zA-Z0-9._-]*'
+                 r'[a-zA-Z0-9])?@'
+                 r'[a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,})'
+                 r'["\']'),
                 re.IGNORECASE
             ),
 
             # Meta tags
             'meta_tags': re.compile(
-                r'<meta[^>]+content=["\']([a-zA-Z0-9](?:[a-zA-Z0-9._-]*[a-zA-Z0-9])?@'
-                r'[a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,})["\']',
+                (r'<meta[^>]+content=["\']([a-zA-Z0-9](?:[a-zA-Z0-9._-]*'
+                 r'[a-zA-Z0-9])?@'
+                 r'[a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,})'
+                 r'["\']'),
                 re.IGNORECASE
             ),
 
             # Comments and hidden text
             'comments': re.compile(
                 r'<!--.*?([a-zA-Z0-9](?:[a-zA-Z0-9._-]*[a-zA-Z0-9])?@'
-                r'[a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,}).*?-->',
+                (r'[a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,})'
+                 r'.*?-->'),
                 re.IGNORECASE | re.DOTALL
             )
         }
@@ -192,11 +197,13 @@ class UltraEmailExtractor:
         extraction_methods['advanced'] = advanced_emails
 
         # 7. Clean and validate emails
-        valid_emails, invalid_emails = self._clean_and_validate(list(all_emails))
+        valid_emails, invalid_emails = self._clean_and_validate(
+            list(all_emails))
 
         # 8. Calculate confidence scores
         for email in valid_emails:
-            confidence_scores[email] = self._calculate_confidence(email, content)
+            confidence_scores[email] = self._calculate_confidence(
+                email, content)
 
         # 9. Remove duplicates and sort
         valid_emails = sorted(list(set(valid_emails)))
@@ -262,16 +269,19 @@ class UltraEmailExtractor:
                         re.I)}):
                 content = meta.get('content', '')
                 if '@' in content:
-                    emails.extend(self.compiled_patterns['basic'].findall(content))
+                    emails.extend(
+                        self.compiled_patterns['basic'].findall(content))
 
             # Extract from text content
             text_content = soup.get_text()
-            emails.extend(self.compiled_patterns['basic'].findall(text_content))
+            emails.extend(
+                self.compiled_patterns['basic'].findall(text_content))
 
         except Exception as e:
             logger.error(f"HTML extraction error: {e}")
             # Fallback to regex
-            emails.extend(self.compiled_patterns['basic'].findall(html_content))
+            emails.extend(
+                self.compiled_patterns['basic'].findall(html_content))
 
         return emails
 
@@ -280,13 +290,15 @@ class UltraEmailExtractor:
         emails = []
 
         # (at) and (dot) patterns
-        for match in self.compiled_patterns['obfuscated_at_dot'].finditer(content):
+        for match in self.compiled_patterns['obfuscated_at_dot'].finditer(
+                content):
             local, domain, tld = match.groups()
             email = f"{local}@{domain}.{tld}"
             emails.append(email)
 
         # Spaced patterns
-        for match in self.compiled_patterns['obfuscated_spaced'].finditer(content):
+        for match in self.compiled_patterns['obfuscated_spaced'].finditer(
+                content):
             local, domain, tld = match.groups()
             email = f"{local}@{domain}.{tld}"
             emails.append(email)
@@ -309,7 +321,8 @@ class UltraEmailExtractor:
             emails.extend(self.compiled_patterns['basic'].findall(decoded))
 
         # Base64 encoded (look for email-like patterns)
-        for match in self.compiled_patterns['base64_partial'].finditer(content):
+        for match in self.compiled_patterns['base64_partial'].finditer(
+                content):
             try:
                 decoded = base64.b64decode(
                     match.group(0) +
@@ -317,7 +330,8 @@ class UltraEmailExtractor:
                     'utf-8',
                     errors='ignore')
                 if '@' in decoded:
-                    emails.extend(self.compiled_patterns['basic'].findall(decoded))
+                    emails.extend(
+                        self.compiled_patterns['basic'].findall(decoded))
             except BaseException:
                 continue
 
@@ -362,13 +376,18 @@ class UltraEmailExtractor:
         # Look for emails in various contexts
         patterns = [
             # Email in quotes
-            r'"([a-zA-Z0-9](?:[a-zA-Z0-9._-]*[a-zA-Z0-9])?@[a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,})"',
+            (r'"([a-zA-Z0-9](?:[a-zA-Z0-9._-]*[a-zA-Z0-9])?@'
+             r'[a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,})"'),
             # Email in parentheses
-            r'\(([a-zA-Z0-9](?:[a-zA-Z0-9._-]*[a-zA-Z0-9])?@[a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,})\)',
+            (r'\(([a-zA-Z0-9](?:[a-zA-Z0-9._-]*[a-zA-Z0-9])?@'
+             r'[a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,})\)'),
             # Email after "contact:"
-            r'contact\s*:\s*([a-zA-Z0-9](?:[a-zA-Z0-9._-]*[a-zA-Z0-9])?@[a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,})',
+            (r'contact\s*:\s*([a-zA-Z0-9](?:[a-zA-Z0-9._-]*[a-zA-Z0-9])?@'
+             r'[a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,})'),
             # Email in structured data
-            r'<[^>]*>([a-zA-Z0-9](?:[a-zA-Z0-9._-]*[a-zA-Z0-9])?@[a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,})<[^>]*>',
+            (r'<[^>]*>([a-zA-Z0-9](?:[a-zA-Z0-9._-]*[a-zA-Z0-9])?@'
+             r'[a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,})'
+             r'<[^>]*>'),
         ]
 
         for pattern in patterns:
@@ -377,7 +396,8 @@ class UltraEmailExtractor:
 
         return emails
 
-    def _clean_and_validate(self, emails: List[str]) -> Tuple[List[str], List[str]]:
+    def _clean_and_validate(
+            self, emails: List[str]) -> Tuple[List[str], List[str]]:
         """Clean and validate extracted emails"""
         valid_emails = []
         invalid_emails = []
@@ -408,7 +428,11 @@ class UltraEmailExtractor:
             return ""
 
         # Remove common prefixes/suffixes
-        email = re.sub(r'^(mailto:|email\s*[:=]\s*)', '', email, flags=re.IGNORECASE)
+        email = re.sub(
+            r'^(mailto:|email\s*[:=]\s*)',
+            '',
+            email,
+            flags=re.IGNORECASE)
         email = re.sub(r'[<>"\'\[\](),;:]', '', email)
         email = email.strip()
 
@@ -437,7 +461,9 @@ class UltraEmailExtractor:
             return False
 
         # Check for valid characters
-        if not re.match(r'^[a-zA-Z0-9](?:[a-zA-Z0-9._-]*[a-zA-Z0-9])?$', local):
+        if not re.match(
+            r'^[a-zA-Z0-9](?:[a-zA-Z0-9._-]*[a-zA-Z0-9])?$',
+                local):
             return False
 
         if not re.match(
@@ -459,14 +485,21 @@ class UltraEmailExtractor:
         domain = email.split('@')[1].lower()
         if domain in self.disposable_domains:
             confidence -= 0.3
-        elif any(provider in domain for provider in ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com']):
+        elif any(provider in domain for provider in [
+                'gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com']):
             confidence += 0.1
 
         # Check if email appears near contact-related keywords
-        contact_keywords = ['contact', 'email', 'mail', 'reach', 'get in touch']
+        contact_keywords = [
+            'contact',
+            'email',
+            'mail',
+            'reach',
+            'get in touch']
         email_pos = context.lower().find(email.lower())
         if email_pos != -1:
-            context_snippet = context[max(0, email_pos - 100):email_pos + 100].lower()
+            context_snippet = context[max(
+                0, email_pos - 100):email_pos + 100].lower()
             if any(keyword in context_snippet for keyword in contact_keywords):
                 confidence += 0.2
 
@@ -477,10 +510,14 @@ class UltraEmailExtractor:
         return {
             'length': len(content),
             'has_html': '<' in content and '>' in content,
-            'has_obfuscation': any(pattern in content.lower() for pattern in ['(at)', '(dot)', '&#64;']),
-            'has_encoding': any(pattern in content.lower() for pattern in ['%40', 'base64']),
-            'contact_indicators': sum(1 for keyword in ['contact', 'email', 'reach'] if keyword in content.lower()),
-            'estimated_quality': 'high' if len(content) > 1000 else 'medium' if len(content) > 100 else 'low'
+            'has_obfuscation': any(pattern in content.lower() for pattern in [
+                '(at)', '(dot)', '&#64;']),
+            'has_encoding': any(pattern in content.lower() for pattern in [
+                '%40', 'base64']),
+            'contact_indicators': sum(1 for keyword in [
+                'contact', 'email', 'reach'] if keyword in content.lower()),
+            'estimated_quality': ('high' if len(content) > 1000 else
+                                 'medium' if len(content) > 100 else 'low')
         }
 
 
