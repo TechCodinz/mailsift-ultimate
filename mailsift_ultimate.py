@@ -36,6 +36,7 @@ import smtplib
 from crypto_payments import crypto_payment_system
 from ultra_email_extractor import ultra_extractor
 from ultra_web_scraper import ultra_scraper, ScrapingConfig
+from ultra_keyword_search import ultra_search_engine, SearchQuery, SearchResult
 # Additional imports for enhanced functionality
 
 # Configure logging
@@ -1303,6 +1304,268 @@ def discover_contact_pages() -> Dict[str, Any]:
             "scraping_results": scraping_results,
             "processing_time": round(processing_time, 2),
             "credits_used": len(verified_emails),
+            "credits_remaining": _get_credits(user_id)
+        }
+    )
+
+
+@app.route("/api/v5/ultra-search", methods=["POST"])
+@limiter.limit("30 per minute")
+def ultra_keyword_search() -> Dict[str, Any]:
+    """ULTRA-ADVANCED keyword search with world-class capabilities"""
+    start_time = time.time()
+    data = request.get_json()
+
+    # Get user
+    user_id = session.get("user_id", "anonymous")
+
+    # Check credits
+    if not _check_credits(user_id, 1):
+        return (
+            jsonify({"error": "Insufficient credits", "upgrade_url": "/pricing"}),
+            402,
+        )
+
+    # Parse search query
+    keywords = data.get("keywords", [])
+    if not keywords:
+        return jsonify({"error": "Keywords required"}), 400
+
+    search_type = data.get("search_type", "all")  # exact, fuzzy, semantic, all
+    industry = data.get("industry", None)
+    domain_pattern = data.get("domain_pattern", None)
+    email_type = data.get("email_type", None)
+    confidence_threshold = float(data.get("confidence_threshold", 0.7))
+    max_results = min(int(data.get("max_results", 100)), 500)
+
+    # Create search query
+    query = SearchQuery(
+        keywords=keywords,
+        search_type=search_type,
+        industry=industry,
+        domain_pattern=domain_pattern,
+        email_type=email_type,
+        confidence_threshold=confidence_threshold,
+        max_results=max_results
+    )
+
+    # Perform ultra search
+    search_results = ultra_search_engine.search_emails(query)
+
+    # Convert results to JSON-serializable format
+    results_data = []
+    for result in search_results:
+        results_data.append({
+            "email": result.email,
+            "relevance_score": result.relevance_score,
+            "match_type": result.match_type,
+            "matched_keywords": result.matched_keywords,
+            "confidence": result.confidence,
+            "snippet": result.snippet,
+            "metadata": result.metadata
+        })
+
+    # Track usage
+    _deduct_credits(user_id, len(search_results))
+    _track_extraction(user_id, len(search_results))
+
+    processing_time = time.time() - start_time
+
+    return jsonify(
+        {
+            "success": True,
+            "search_query": {
+                "keywords": keywords,
+                "search_type": search_type,
+                "industry": industry,
+                "domain_pattern": domain_pattern,
+                "email_type": email_type,
+                "confidence_threshold": confidence_threshold,
+                "max_results": max_results
+            },
+            "results": results_data,
+            "summary": {
+                "total_found": len(search_results),
+                "exact_matches": len([r for r in search_results if r.match_type == 'exact']),
+                "fuzzy_matches": len([r for r in search_results if r.match_type == 'fuzzy']),
+                "semantic_matches": len([r for r in search_results if r.match_type == 'semantic']),
+                "contextual_matches": len([r for r in search_results if r.match_type == 'contextual']),
+                "average_confidence": round(sum(r.confidence for r in search_results) / len(search_results), 3) if search_results else 0
+            },
+            "processing_time": round(processing_time, 2),
+            "credits_used": len(search_results),
+            "credits_remaining": _get_credits(user_id)
+        }
+    )
+
+
+@app.route("/api/v5/search-suggestions", methods=["GET"])
+@limiter.limit("50 per minute")
+def get_search_suggestions() -> Dict[str, Any]:
+    """Get intelligent search suggestions"""
+    try:
+        partial_query = request.args.get("q", "").strip()
+        limit = min(int(request.args.get("limit", 10)), 20)
+
+        if not partial_query:
+            return jsonify({"error": "Query parameter 'q' required"}), 400
+
+        suggestions = ultra_search_engine.get_search_suggestions(partial_query, limit)
+
+        return jsonify(
+            {
+                "success": True,
+                "query": partial_query,
+                "suggestions": suggestions,
+                "count": len(suggestions)
+            }
+        )
+
+    except Exception as e:
+        logger.error(f"Search suggestions error: {e}")
+        return jsonify({"error": "Failed to get suggestions"}), 500
+
+
+@app.route("/api/v5/search-analytics", methods=["GET"])
+@limiter.limit("10 per minute")
+def get_search_analytics() -> Dict[str, Any]:
+    """Get search analytics and performance metrics"""
+    try:
+        analytics = ultra_search_engine.get_search_analytics()
+
+        return jsonify(
+            {
+                "success": True,
+                "analytics": analytics,
+                "timestamp": datetime.now().isoformat()
+            }
+        )
+
+    except Exception as e:
+        logger.error(f"Search analytics error: {e}")
+        return jsonify({"error": "Failed to get analytics"}), 500
+
+
+@app.route("/api/v5/index-emails", methods=["POST"])
+@limiter.limit("5 per minute")
+def index_emails_for_search() -> Dict[str, Any]:
+    """Index emails for advanced search capabilities"""
+    start_time = time.time()
+    data = request.get_json()
+
+    # Get user
+    user_id = session.get("user_id", "anonymous")
+
+    # Check credits
+    if not _check_credits(user_id, 1):
+        return (
+            jsonify({"error": "Insufficient credits", "upgrade_url": "/pricing"}),
+            402,
+        )
+
+    emails = data.get("emails", [])
+    if not emails:
+        return jsonify({"error": "Emails list required"}), 400
+
+    # Limit emails for performance
+    emails = emails[:1000]  # Max 1000 emails per request
+
+    # Get metadata if provided
+    metadata_list = data.get("metadata", [])
+
+    # Index emails
+    ultra_search_engine.bulk_index_emails(emails, metadata_list)
+
+    # Track usage
+    _deduct_credits(user_id, len(emails))
+    _track_extraction(user_id, len(emails))
+
+    processing_time = time.time() - start_time
+
+    return jsonify(
+        {
+            "success": True,
+            "indexed_emails": len(emails),
+            "processing_time": round(processing_time, 2),
+            "credits_used": len(emails),
+            "credits_remaining": _get_credits(user_id),
+            "message": f"Successfully indexed {len(emails)} emails for advanced search"
+        }
+    )
+
+
+@app.route("/api/v5/industry-search", methods=["POST"])
+@limiter.limit("20 per minute")
+def industry_specific_search() -> Dict[str, Any]:
+    """Search emails by specific industry with intelligent filtering"""
+    start_time = time.time()
+    data = request.get_json()
+
+    # Get user
+    user_id = session.get("user_id", "anonymous")
+
+    # Check credits
+    if not _check_credits(user_id, 2):  # More expensive operation
+        return (
+            jsonify({"error": "Insufficient credits", "upgrade_url": "/pricing"}),
+            402,
+        )
+
+    industry = data.get("industry", "").strip().lower()
+    keywords = data.get("keywords", [])
+    max_results = min(int(data.get("max_results", 50)), 200)
+
+    if not industry:
+        return jsonify({"error": "Industry required"}), 400
+
+    # Create industry-specific search query
+    query = SearchQuery(
+        keywords=keywords,
+        search_type="semantic",  # Use semantic search for industry
+        industry=industry,
+        confidence_threshold=0.6,  # Lower threshold for industry search
+        max_results=max_results
+    )
+
+    # Perform industry search
+    search_results = ultra_search_engine.search_emails(query)
+
+    # Get industry statistics
+    industry_emails = ultra_search_engine.search_index['industries'].get(industry, [])
+    industry_keywords = ultra_search_engine.industry_keywords.get(industry, [])
+
+    # Convert results
+    results_data = []
+    for result in search_results:
+        results_data.append({
+            "email": result.email,
+            "relevance_score": result.relevance_score,
+            "matched_keywords": result.matched_keywords,
+            "confidence": result.confidence,
+            "snippet": result.snippet,
+            "metadata": result.metadata
+        })
+
+    # Track usage
+    _deduct_credits(user_id, len(search_results))
+    _track_extraction(user_id, len(search_results))
+
+    processing_time = time.time() - start_time
+
+    return jsonify(
+        {
+            "success": True,
+            "industry": industry,
+            "industry_keywords": industry_keywords,
+            "total_industry_emails": len(industry_emails),
+            "results": results_data,
+            "summary": {
+                "found": len(search_results),
+                "average_confidence": round(sum(r.confidence for r in search_results) / len(search_results), 3) if search_results else 0,
+                "top_keywords": list(set([kw for r in search_results for kw in r.matched_keywords]))[:10]
+            },
+            "processing_time": round(processing_time, 2),
+            "credits_used": len(search_results),
             "credits_remaining": _get_credits(user_id)
         }
     )
