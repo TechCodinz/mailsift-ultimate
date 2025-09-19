@@ -587,10 +587,19 @@ class UltraMonitoringSystem:
         """Get comprehensive system status"""
         return {
             'timestamp': datetime.now().isoformat(),
-            'metrics': {name: asdict(metric) for name, metric in self.metrics.items()},
+            'metrics': {
+                name: {**asdict(metric), 'type': metric.type.value} 
+                for name, metric in self.metrics.items()
+            },
             'alerts': {
-                'active': [asdict(alert) for alert in self.alerts.values() if not alert.resolved],
-                'resolved': [asdict(alert) for alert in self.alerts.values() if alert.resolved]
+                'active': [
+                    {**asdict(alert), 'level': alert.level.value} 
+                    for alert in self.alerts.values() if not alert.resolved
+                ],
+                'resolved': [
+                    {**asdict(alert), 'level': alert.level.value} 
+                    for alert in self.alerts.values() if alert.resolved
+                ]
             },
             'health_checks': {name: asdict(check) for name, check in self.health_checks.items()},
             'system_info': {
