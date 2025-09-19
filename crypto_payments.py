@@ -175,8 +175,9 @@ class UltraCryptoPaymentSystem:
                 'https://api.coingecko.com/api/v3/simple/price',
                 params={
                     'ids': (
-                        'bitcoin,ethereum,tether,binancecoin,matic-network,'
-                        'solana,cardano,polkadot,avalanche-2'),
+                        'bitcoin,ethereum,tether,binancecoin,'
+                        'matic-network,solana,cardano,polkadot,'
+                        'avalanche-2'),
                     'vs_currencies': 'usd'},
                 timeout=10)
 
