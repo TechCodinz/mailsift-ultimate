@@ -39,7 +39,7 @@ from ultra_email_extractor import ultra_extractor
 from ultra_web_scraper import ultra_scraper, ScrapingConfig
 from ultra_keyword_search import ultra_search_engine, SearchQuery
 from ultra_error_handling import ultra_error_handler, ErrorContext
-from ultra_monitoring import ultra_monitoring
+from ultra_monitoring import ultra_monitoring, set_gauge, increment_counter
 from ultra_performance import ultra_performance, monitor_performance, PerformanceLevel
 # Additional imports for enhanced functionality
 
@@ -2161,7 +2161,7 @@ def health() -> Dict[str, Any]:
         # AI Engine health
         try:
             # Test AI engine
-            test_result = intelligence_engine.analyze_email("test@example.com")
+            intelligence_engine.analyze_email("test@example.com")
             services_status["ai_engine"] = "healthy"
         except Exception as e:
             services_status["ai_engine"] = f"unhealthy: {str(e)}"
