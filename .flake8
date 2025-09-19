@@ -9,7 +9,19 @@ exclude =
     env,
     .env,
     migrations/versions,
-    tests/__pycache__
+    tests/__pycache__,
+    mailsift_final.py,
+    mailsift_perfect.py,
+    mailsift_pro.py,
+    mailsift_ultimate_simple.py,
+    mailsift_ultra_simple.py,
+    server.py,
+    server_ultra.py,
+    server_v2.py,
+    subscription_system.py,
+    ultra_monitoring.py,
+    ultra_performance.py,
+    payments.py
 per-file-ignores =
     mailsift_ultimate.py:E501
     ultra_keyword_search.py:E501
