@@ -472,7 +472,7 @@ class UltraCryptoPaymentSystem:
             cursor = conn.execute('''
                 SELECT * FROM crypto_payments ORDER BY created_at DESC
             ''')
-            
+
             for row in cursor.fetchall():
                 payment_id = row[0]
                 payments[payment_id] = {
@@ -512,73 +512,87 @@ class UltraCryptoPaymentSystem:
             ''', (license_key, int(time.time()), payment_id))
 
         return license_key
-    
+
     def send_license_email(self, email: str, license_key: str) -> bool:
         """Send license key via email"""
         try:
             import smtplib
             from email.mime.text import MIMEText
             from email.mime.multipart import MIMEMultipart
-            
+
             # Email configuration
             smtp_host = os.environ.get('SMTP_HOST')
             smtp_port = int(os.environ.get('SMTP_PORT', '587'))
             smtp_user = os.environ.get('SMTP_USER')
             smtp_pass = os.environ.get('SMTP_PASS')
             from_email = os.environ.get('EMAIL_FROM', 'noreply@mailsift.com')
-            
+
             if not all([smtp_host, smtp_user, smtp_pass]):
-                logger.warning("SMTP configuration incomplete, cannot send email")
+                logger.warning("SMTP configuration incomplete
+                    cannot send email")
                 return False
-            
+
             # Create email content
             subject = "🎉 Your MailSift License Key - Welcome!"
-            
+
             html_content = f"""
             <!DOCTYPE html>
             <html>
             <head>
                 <style>
-                    body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-                    .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-                    .header {{ background: linear-gradient(135deg, #00ffff, #0080ff); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
-                    .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
-                    .license-box {{ background: #2a2a2a; color: #00ffff; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0; font-family: monospace; font-size: 18px; font-weight: bold; }}
-                    .button {{ display: inline-block; background: #00ffff; color: #000; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }}
-                    .footer {{ text-align: center; color: #666; font-size: 12px; margin-top: 30px; }}
+                    body {{ font-family: Arial
+                        sans-serif; line-height: 1.6; color: #333; }}
+                    .container {{ max-width: 600px; margin: 0 auto; padding: 20
+                        px; }}
+                    .header {{ background: linear-gradient(135deg, #00ffff, #00
+                        80ff); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
+                    .content {{ background: #f9f9f9; padding: 30px; border-radi
+                        us: 0 0 10px 10px; }}
+                    .license-box {{ background: #2a2a2a; color: #00ffff; paddin
+                        g: 20px; border-radius: 8px; text-align: center; margin: 20px 0; font-family: monospace; font-size: 18px; font-weight: bold; }}
+                    .button {{ display: inline-block; background: #00ffff; colo
+                        r: #000; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }}
+                    .footer {{ text-align: center; color: #666; font-size: 12px
+                        ; margin-top: 30px; }}
                 </style>
             </head>
             <body>
                 <div class="container">
                     <div class="header">
                         <h1>🚀 Welcome to MailSift Ultra!</h1>
-                        <p>Your payment has been verified and your license is ready!</p>
+                        <p>Your payment has been verified
+                            your license is ready!</p>
                     </div>
-                    
+
                     <div class="content">
                         <h2>Your License Key</h2>
                         <div class="license-box">
                             {license_key}
                         </div>
-                        
+
                         <h3>🎯 What's Next?</h3>
                         <ol>
-                            <li><strong>Download Desktop App:</strong> Visit our desktop download page</li>
-                            <li><strong>Enter License Key:</strong> Use the key above to unlock all features</li>
-                            <li><strong>Start Extracting:</strong> Enjoy unlimited email extraction with 99.9% accuracy</li>
+                            <li><strong>Download Desktop App:</strong> Visit ou
+                                r desktop download page</li>
+                            <li><strong>Enter License Key:</strong> Use the key
+                                 above to unlock all features</li>
+                            <li><strong>Start Extracting:</strong> Enjoy unlimi
+                                ted email extraction with 99.9% accuracy</li>
                         </ol>
-                        
+
                         <h3>✨ Features Included:</h3>
                         <ul>
                             <li>🔍 Advanced AI-powered email extraction</li>
                             <li>🌐 Web scraping with anti-bot protection</li>
-                            <li>📁 Multi-format file support (PDF, DOCX, HTML, etc.)</li>
+                            <li>📁 Multi-format file support (PDF
+                                DOCX, HTML, etc.)</li>
                             <li>✅ Real-time email validation</li>
                             <li>💾 Export to CSV, Excel, JSON</li>
-                            <li>🖥️ Desktop application (Windows, Mac, Linux)</li>
+                            <li>🖥️ Desktop application (Windows
+                                Mac, Linux)</li>
                             <li>🔌 Full API access</li>
                         </ul>
-                        
+
                         <h3>🆘 Need Help?</h3>
                         <p>Our AI support assistant is available 24/7:</p>
                         <ul>
@@ -586,38 +600,41 @@ class UltraCryptoPaymentSystem:
                             <li>📧 Email: support@mailsift.com</li>
                             <li>📚 Documentation & Guides</li>
                         </ul>
-                        
-                        <p><strong>Thank you for choosing MailSift Ultra!</strong></p>
+
+                        <p><strong>Thank you
+                            choosing MailSift Ultra!</strong></p>
                     </div>
-                    
+
                     <div class="footer">
-                        <p>MailSift Ultra - AI-Powered Email Intelligence Platform</p>
-                        <p>This email was sent to {email} because you purchased a license.</p>
+                        <p>MailSift Ultra
+                            AI-Powered Email Intelligence Platform</p>
+                        <p>This email was sent to {email} because you purchased
+                             a license.</p>
                     </div>
                 </div>
             </body>
             </html>
             """
-            
+
             # Create message
             msg = MIMEMultipart('alternative')
             msg['Subject'] = subject
             msg['From'] = from_email
             msg['To'] = email
-            
+
             # Add HTML content
             html_part = MIMEText(html_content, 'html')
             msg.attach(html_part)
-            
+
             # Send email
             with smtplib.SMTP(smtp_host, smtp_port) as server:
                 server.starttls()
                 server.login(smtp_user, smtp_pass)
                 server.send_message(msg)
-            
+
             logger.info(f"License email sent successfully to {email}")
             return True
-            
+
         except Exception as e:
             logger.error(f"Failed to send license email to {email}: {e}")
             return False

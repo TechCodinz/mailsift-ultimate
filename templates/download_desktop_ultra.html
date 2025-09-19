@@ -61,7 +61,7 @@
         <!-- Download Options -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
             <!-- Windows -->
-            <div class="cyber-card p-8 text-center download-card">
+            <div class="cyber-card p-8 text-center download-card platform-download relative" data-platform="windows">
                 <div class="text-6xl mb-4 feature-icon">🪟</div>
                 <h3 class="text-2xl font-bold text-white mb-4">Windows</h3>
                 <p class="text-gray-300 mb-6">Compatible with Windows 10/11</p>
@@ -78,7 +78,7 @@
             </div>
 
             <!-- macOS -->
-            <div class="cyber-card p-8 text-center download-card">
+            <div class="cyber-card p-8 text-center download-card platform-download relative" data-platform="mac">
                 <div class="text-6xl mb-4 feature-icon">🍎</div>
                 <h3 class="text-2xl font-bold text-white mb-4">macOS</h3>
                 <p class="text-gray-300 mb-6">Compatible with macOS 10.15+</p>
@@ -95,7 +95,7 @@
             </div>
 
             <!-- Linux -->
-            <div class="cyber-card p-8 text-center download-card">
+            <div class="cyber-card p-8 text-center download-card platform-download relative" data-platform="linux">
                 <div class="text-6xl mb-4 feature-icon">🐧</div>
                 <h3 class="text-2xl font-bold text-white mb-4">Linux</h3>
                 <p class="text-gray-300 mb-6">Compatible with Ubuntu 18.04+</p>
@@ -294,43 +294,209 @@
 
     <script>
         function downloadDesktop(platform) {
-            // Show download confirmation
             const platformNames = {
                 'windows': 'Windows',
                 'mac': 'macOS',
                 'linux': 'Linux'
             };
             
-            const confirmDownload = confirm(`Download MailSift Desktop for ${platformNames[platform]}?\n\nThis will start the download process.`);
+            const platformInfo = {
+                'windows': {
+                    name: 'Windows',
+                    file: 'MailSift_Ultra_Windows.exe',
+                    size: '16 MB',
+                    requirements: 'Windows 10/11, 4GB RAM'
+                },
+                'mac': {
+                    name: 'macOS',
+                    file: 'MailSift_Ultra_macOS.dmg',
+                    size: '18 MB',
+                    requirements: 'macOS 10.15+, 4GB RAM'
+                },
+                'linux': {
+                    name: 'Linux',
+                    file: 'MailSift_Ultra_Linux.AppImage',
+                    size: '17 MB',
+                    requirements: 'Ubuntu 18.04+, 4GB RAM'
+                }
+            };
+            
+            const info = platformInfo[platform];
+            const confirmDownload = confirm(
+                `Download MailSift Ultra for ${info.name}?\n\n` +
+                `File: ${info.file}\n` +
+                `Size: ${info.size}\n` +
+                `Requirements: ${info.requirements}\n\n` +
+                `This will start the download process.`
+            );
             
             if (confirmDownload) {
-                // Simulate download process
                 showDownloadProgress(platform);
-                
-                // In production, this would trigger actual file download
-                setTimeout(() => {
-                    alert(`Download started for ${platformNames[platform]}!\n\nIn production, the installer file would download automatically.`);
-                }, 2000);
+                initiateDownload(platform);
+                trackDownload(platform);
             }
         }
         
+        function initiateDownload(platform) {
+            // Create download URLs based on platform
+            const downloadUrls = {
+                'windows': '/api/download/desktop/windows',
+                'mac': '/api/download/desktop/mac',
+                'linux': '/api/download/desktop/linux'
+            };
+            
+            const downloadUrl = downloadUrls[platform];
+            
+            // Create a temporary link element to trigger download
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = `MailSift_Ultra_${platform}`;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Show success message
+            setTimeout(() => {
+                showDownloadSuccess(platform);
+            }, 3000);
+        }
+        
         function showDownloadProgress(platform) {
-            // Create a simple progress indicator
+            const platformNames = {
+                'windows': 'Windows',
+                'mac': 'macOS',
+                'linux': 'Linux'
+            };
+            
             const progressDiv = document.createElement('div');
-            progressDiv.className = 'fixed top-4 right-4 bg-gray-800 border border-cyan-500 rounded-lg p-4 text-white z-50';
+            progressDiv.id = 'download-progress';
+            progressDiv.className = 'fixed top-4 right-4 bg-green-900 border border-green-500 rounded-lg p-4 text-green-300 z-50 max-w-sm';
             progressDiv.innerHTML = `
                 <div class="flex items-center">
-                    <div class="animate-spin w-4 h-4 border-2 border-cyan-500 border-t-transparent rounded-full mr-3"></div>
-                    <div>Preparing download...</div>
+                    <div class="animate-spin w-4 h-4 border-2 border-green-400 border-t-transparent rounded-full mr-3"></div>
+                    <div>
+                        <div class="font-bold">Downloading for ${platformNames[platform]}</div>
+                        <div class="text-sm opacity-75">Preparing installer...</div>
+                    </div>
                 </div>
             `;
             
             document.body.appendChild(progressDiv);
             
+            // Remove after 5 seconds
             setTimeout(() => {
-                progressDiv.remove();
-            }, 3000);
+                const elem = document.getElementById('download-progress');
+                if (elem) elem.remove();
+            }, 5000);
         }
+        
+        function showDownloadSuccess(platform) {
+            const platformNames = {
+                'windows': 'Windows',
+                'mac': 'macOS',
+                'linux': 'Linux'
+            };
+            
+            const successDiv = document.createElement('div');
+            successDiv.className = 'fixed top-4 right-4 bg-blue-900 border border-blue-500 rounded-lg p-4 text-blue-300 z-50 max-w-sm';
+            successDiv.innerHTML = `
+                <div class="flex items-center">
+                    <div class="w-4 h-4 mr-3">✅</div>
+                    <div>
+                        <div class="font-bold">Download Complete!</div>
+                        <div class="text-sm opacity-75">MailSift Ultra for ${platformNames[platform]} is ready to install.</div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(successDiv);
+            
+            setTimeout(() => {
+                successDiv.remove();
+            }, 4000);
+        }
+        
+        function trackDownload(platform) {
+            // Track download analytics
+            fetch('/api/track-download', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    platform: platform,
+                    timestamp: new Date().toISOString(),
+                    user_agent: navigator.userAgent,
+                    referrer: document.referrer
+                })
+            }).catch(error => {
+                console.log('Download tracking failed:', error);
+            });
+        }
+        
+        // Auto-detect user's OS and highlight the appropriate download button
+        function detectOS() {
+            const userAgent = navigator.userAgent.toLowerCase();
+            let detectedOS = 'windows'; // default
+            
+            if (userAgent.includes('mac')) {
+                detectedOS = 'mac';
+            } else if (userAgent.includes('linux')) {
+                detectedOS = 'linux';
+            } else if (userAgent.includes('win')) {
+                detectedOS = 'windows';
+            }
+            
+            // Highlight the detected OS button
+            const osButtons = document.querySelectorAll('.platform-download');
+            osButtons.forEach(button => {
+                if (button.getAttribute('data-platform') === detectedOS) {
+                    button.classList.add('ring-2', 'ring-cyan-400', 'ring-opacity-50', 'bg-cyan-900');
+                    
+                    // Add "Recommended" badge
+                    const badge = document.createElement('div');
+                    badge.className = 'absolute -top-2 -right-2 bg-cyan-500 text-white text-xs px-2 py-1 rounded-full font-bold';
+                    badge.textContent = 'Recommended';
+                    button.appendChild(badge);
+                    
+                    // Add pulse animation
+                    button.classList.add('animate-pulse');
+                }
+            });
+        }
+        
+        // Show system requirements based on detected OS
+        function showSystemRequirements() {
+            const userAgent = navigator.userAgent.toLowerCase();
+            let requirements = '';
+            
+            if (userAgent.includes('mac')) {
+                requirements = 'macOS 10.15 or later, 4GB RAM, 100MB free space';
+            } else if (userAgent.includes('linux')) {
+                requirements = 'Ubuntu 18.04+ or similar, 4GB RAM, 100MB free space';
+            } else {
+                requirements = 'Windows 10 or later, 4GB RAM, 100MB free space';
+            }
+            
+            const requirementsDiv = document.createElement('div');
+            requirementsDiv.className = 'mt-4 p-3 bg-blue-900 border border-blue-500 rounded-lg text-blue-300 text-sm';
+            requirementsDiv.innerHTML = `
+                <div class="font-bold mb-1">💻 Your System Requirements:</div>
+                <div>${requirements}</div>
+            `;
+            
+            const downloadSection = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-3');
+            if (downloadSection) {
+                downloadSection.parentNode.insertBefore(requirementsDiv, downloadSection);
+            }
+        }
+        
+        // Run OS detection when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            detectOS();
+            showSystemRequirements();
+        });
     </script>
 </body>
 </html>

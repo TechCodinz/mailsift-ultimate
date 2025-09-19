@@ -3,7 +3,7 @@ MailSift ULTIMATE - Production-Ready Revenue-Generating Platform
 The Most Advanced Email Intelligence System in the World
 """
 
-from flask import Flask, render_template, request, jsonify, session, Response
+from flask import Flask, render_template, request, jsonify, session, Response, send_file
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -2188,16 +2188,18 @@ def admin_dashboard() -> Dict[str, Any]:
         # Get payment statistics
         payments_data = crypto_payment_system.get_all_payments()
         total_payments = len(payments_data)
-        verified_payments = sum(1 for p in payments_data.values() if p.get('verified', False))
+        verified_payments = sum(
+            1 for p in payments_data.values() if p.get(
+                'verified', False))
         pending_payments = total_payments - verified_payments
-        
+
         # Get recent payments
         recent_payments = sorted(
-            payments_data.values(), 
-            key=lambda x: x.get('timestamp', 0), 
+            payments_data.values(),
+            key=lambda x: x.get('timestamp', 0),
             reverse=True
         )[:10]
-        
+
         return jsonify({
             "status": "success",
             "admin_dashboard": {
@@ -2224,28 +2226,29 @@ def admin_verify_payment() -> Dict[str, Any]:
     try:
         data = request.get_json()
         txid = data.get('txid')
-        
+
         if not txid:
             return jsonify({"error": "Transaction ID required"}), 400
-            
+
         # Verify the payment
         result = crypto_payment_system.verify_payment(txid)
-        
+
         if result['verified']:
             # Generate license key
             license_key = crypto_payment_system.generate_license_key(txid)
-            
+
             # Get payment details to send email
             payment_details = crypto_payment_system.get_payment_status(txid)
             user_email = payment_details.get('user_email', '')
-            
+
             # Send license email automatically
             if user_email:
-                email_sent = crypto_payment_system.send_license_email(user_email, license_key)
+                email_sent = crypto_payment_system.send_license_email(
+                    user_email, license_key)
                 email_status = "License email sent" if email_sent else "Email sending failed"
             else:
                 email_status = "No email address provided"
-            
+
             return jsonify({
                 "status": "success",
                 "verified": True,
@@ -2259,14 +2262,15 @@ def admin_verify_payment() -> Dict[str, Any]:
                 "verified": False,
                 "message": "Payment verification failed"
             }), 400
-            
+
     except Exception as e:
         error_context = ErrorContext(
             endpoint="admin_verify_payment",
             timestamp=datetime.now().isoformat()
         )
         error_id = ultra_error_handler.handle_error(e, error_context)
-        return jsonify({"error": "Payment verification error", "error_id": error_id}), 500
+        return jsonify({"error": "Payment verification error",
+                       "error_id": error_id}), 500
 
 
 @app.route("/admin/generate-license", methods=["POST"])
@@ -2277,24 +2281,24 @@ def admin_generate_license() -> Dict[str, Any]:
         data = request.get_json()
         txid = data.get('txid')
         email = data.get('email', '')
-        
+
         if not txid:
             return jsonify({"error": "Transaction ID required"}), 400
-            
+
         # Generate license key
         license_key = crypto_payment_system.generate_license_key(txid)
-        
+
         # Send license via email if provided
         if email:
             crypto_payment_system.send_license_email(email, license_key)
-        
+
         return jsonify({
             "status": "success",
             "license_key": license_key,
             "email_sent": bool(email),
             "message": "License generated successfully"
         })
-        
+
     except Exception as e:
         error_context = ErrorContext(
             endpoint="admin_generate_license",
@@ -2326,13 +2330,13 @@ def ai_chat_support() -> Dict[str, Any]:
         data = request.get_json()
         session_id = data.get('session_id', f"session_{int(time.time())}")
         user_message = data.get('message', '')
-        
+
         if not user_message:
             return jsonify({"error": "Message is required"}), 400
-        
+
         # Get AI response
         chat_message = ai_support_engine.get_chat_response(session_id, user_message)
-        
+
         return jsonify({
             "status": "success",
             "session_id": session_id,
@@ -2340,7 +2344,7 @@ def ai_chat_support() -> Dict[str, Any]:
             "timestamp": chat_message.timestamp.isoformat(),
             "suggestions": ai_support_engine.get_suggested_responses(user_message)
         })
-        
+
     except Exception as e:
         error_context = ErrorContext(
             endpoint="ai_chat_support",
@@ -2360,15 +2364,15 @@ def create_support_ticket() -> Dict[str, Any]:
         subject = data.get('subject', '')
         message = data.get('message', '')
         category = data.get('category', 'general')
-        
+
         if not all([user_email, subject, message]):
             return jsonify({"error": "Email, subject, and message are required"}), 400
-        
+
         # Create support ticket
         ticket = ai_support_engine.create_support_ticket(
             user_email, subject, message, category
         )
-        
+
         return jsonify({
             "status": "success",
             "ticket_id": ticket.id,
@@ -2376,7 +2380,7 @@ def create_support_ticket() -> Dict[str, Any]:
             "priority": ticket.priority,
             "estimated_response": "Within 2 hours during business hours"
         })
-        
+
     except Exception as e:
         error_context = ErrorContext(
             endpoint="create_support_ticket",
@@ -2400,11 +2404,11 @@ def download_desktop_file(platform: str) -> Response:
     try:
         if platform not in ['windows', 'mac', 'linux']:
             return jsonify({"error": "Invalid platform"}), 400
-        
+
         # For now, return a placeholder download
         # In production, serve actual installer files
         desktop_app_path = f"desktop_app_{platform}.zip"
-        
+
         if os.path.exists(desktop_app_path):
             return send_file(desktop_app_path, as_attachment=True)
         else:
@@ -2414,7 +2418,7 @@ def download_desktop_file(platform: str) -> Response:
                 "download_url": f"https://github.com/mailsift/desktop/releases/latest/download/MailSift_{platform}.zip",
                 "message": "Desktop application download link generated"
             })
-        
+
     except Exception as e:
         error_context = ErrorContext(
             endpoint="download_desktop_file",
@@ -2439,13 +2443,13 @@ def generate_api_key() -> Dict[str, Any]:
         data = request.get_json()
         user_email = data.get('email', '')
         tier = data.get('tier', 'free')
-        
+
         if not user_email:
             return jsonify({"error": "Email is required"}), 400
-        
+
         # Generate API key
         api_key_obj = api_generator.generate_api_key(user_email, tier)
-        
+
         return jsonify({
             "status": "success",
             "api_key": api_key_obj.api_key,
@@ -2455,14 +2459,15 @@ def generate_api_key() -> Dict[str, Any]:
             "rate_limit_per_hour": api_key_obj.rate_limit_per_hour,
             "pricing": api_generator.get_pricing_info()['tiers'][tier]
         })
-        
+
     except Exception as e:
         error_context = ErrorContext(
             endpoint="generate_api_key",
             timestamp=datetime.now().isoformat()
         )
         error_id = ultra_error_handler.handle_error(e, error_context)
-        return jsonify({"error": "API key generation failed", "error_id": error_id}), 500
+        return jsonify({"error": "API key generation failed",
+                       "error_id": error_id}), 500
 
 
 @app.route("/api/usage-stats", methods=["POST"])
@@ -2472,27 +2477,28 @@ def get_api_usage_stats() -> Dict[str, Any]:
     try:
         data = request.get_json()
         api_key = data.get('api_key', '')
-        
+
         if not api_key:
             return jsonify({"error": "API key is required"}), 400
-        
+
         stats = api_generator.get_usage_stats(api_key)
-        
+
         if not stats:
             return jsonify({"error": "Invalid API key"}), 401
-        
+
         return jsonify({
             "status": "success",
             "stats": stats
         })
-        
+
     except Exception as e:
         error_context = ErrorContext(
             endpoint="get_api_usage_stats",
             timestamp=datetime.now().isoformat()
         )
         error_id = ultra_error_handler.handle_error(e, error_context)
-        return jsonify({"error": "Failed to get usage stats", "error_id": error_id}), 500
+        return jsonify({"error": "Failed to get usage stats",
+                       "error_id": error_id}), 500
 
 
 @app.route("/api/purchase-credits", methods=["POST"])
@@ -2505,19 +2511,19 @@ def purchase_api_credits() -> Dict[str, Any]:
         credits = data.get('credits', 0)
         payment_method = data.get('payment_method', 'crypto')
         transaction_id = data.get('transaction_id', '')
-        
+
         if not all([api_key, credits]):
             return jsonify({"error": "API key and credits are required"}), 400
-        
+
         # Calculate amount based on pricing
         pricing = api_generator.get_pricing_info()['tiers']['pay_as_you_use']
         amount = credits * pricing['price_per_credit']
-        
+
         # Record purchase
         success = api_generator.purchase_credits(
             api_key, credits, amount, payment_method, transaction_id
         )
-        
+
         if success:
             return jsonify({
                 "status": "success",
@@ -2527,7 +2533,7 @@ def purchase_api_credits() -> Dict[str, Any]:
             })
         else:
             return jsonify({"error": "Failed to purchase credits"}), 400
-        
+
     except Exception as e:
         error_context = ErrorContext(
             endpoint="purchase_api_credits",
@@ -2550,20 +2556,21 @@ def admin_payments() -> Dict[str, Any]:
     """Get all payment records for admin review"""
     try:
         payments = crypto_payment_system.get_all_payments()
-        
+
         return jsonify({
             "status": "success",
             "payments": payments,
             "total_count": len(payments)
         })
-        
+
     except Exception as e:
         error_context = ErrorContext(
             endpoint="admin_payments",
             timestamp=datetime.now().isoformat()
         )
         error_id = ultra_error_handler.handle_error(e, error_context)
-        return jsonify({"error": "Failed to retrieve payments", "error_id": error_id}), 500
+        return jsonify({"error": "Failed to retrieve payments",
+                       "error_id": error_id}), 500
 
 
 @app.route("/health")

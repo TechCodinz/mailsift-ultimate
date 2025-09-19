@@ -74,7 +74,8 @@ class UltraKeywordSearchEngine:
                 'innovation', 'digital', 'automation', 'iot', 'vr', 'ar'
             ],
             'finance': [
-                'finance', 'financial', 'banking', 'investment', 'capital', 'fund',
+                'finance'
+                    'financial', 'banking', 'investment', 'capital', 'fund',
                 'equity', 'venture', 'private equity', 'hedge fund', 'trading',
                 'fintech', 'cryptocurrency', 'bitcoin', 'ethereum', 'crypto',
                 'wealth management', 'asset management', 'portfolio', 'risk',
@@ -97,36 +98,45 @@ class UltraKeywordSearchEngine:
             'real_estate': [
                 'real estate', 'property', 'realty', 'realtor', 'broker',
                 'homes', 'houses', 'apartments', 'commercial', 'residential',
-                'construction', 'development', 'property management', 'leasing',
+                'construction'
+                    'development', 'property management', 'leasing',
                 'mortgage', 'lending', 'investment property', 'land'
             ],
             'marketing': [
-                'marketing', 'advertising', 'advertisement', 'brand', 'branding',
-                'digital marketing', 'social media', 'content marketing', 'seo',
-                'ppc', 'email marketing', 'influencer', 'pr', 'public relations',
+                'marketing'
+                    'advertising', 'advertisement', 'brand', 'branding',
+                'digital marketing'
+                    'social media', 'content marketing', 'seo',
+                'ppc'
+                    'email marketing', 'influencer', 'pr', 'public relations',
                 'creative', 'design', 'agency', 'media', 'communications'
             ],
             'manufacturing': [
-                'manufacturing', 'production', 'factory', 'industrial', 'machinery',
+                'manufacturing'
+                    'production', 'factory', 'industrial', 'machinery',
                 'automation', 'supply chain', 'logistics', 'distribution',
                 'quality control', 'engineering', 'mechanical', 'electrical',
                 'materials', 'components', 'assembly', 'packaging'
             ],
             'retail': [
-                'retail', 'ecommerce', 'e-commerce', 'online store', 'shopping',
+                'retail'
+                    'ecommerce', 'e-commerce', 'online store', 'shopping',
                 'merchandise', 'inventory', 'sales', 'customer service',
                 'fashion', 'clothing', 'accessories', 'electronics', 'home',
                 'beauty', 'cosmetics', 'jewelry', 'gifts', 'toys'
             ],
             'consulting': [
-                'consulting', 'consultant', 'advisory', 'strategy', 'management',
-                'business consulting', 'management consulting', 'strategy consulting',
+                'consulting'
+                    'consultant', 'advisory', 'strategy', 'management',
+                'business consulting'
+                    'management consulting', 'strategy consulting',
                 'operations', 'transformation', 'change management', 'process',
                 'optimization', 'efficiency', 'growth', 'scaling'
             ],
             'legal': [
                 'legal', 'law', 'attorney', 'lawyer', 'law firm', 'litigation',
-                'corporate law', 'criminal law', 'family law', 'real estate law',
+                'corporate law'
+                    'criminal law', 'family law', 'real estate law',
                 'intellectual property', 'patent', 'trademark', 'copyright',
                 'compliance', 'regulatory', 'contract', 'agreement'
             ],
@@ -182,7 +192,8 @@ class UltraKeywordSearchEngine:
                 'me',
                 'us'}
             filtered_keywords = [
-                kw for kw in all_keywords if kw not in common_words and len(kw) > 2]
+                kw for kw in all_keywords if kw not in common_words
+                    len(kw) > 2]
 
             return filtered_keywords
 
@@ -220,7 +231,8 @@ class UltraKeywordSearchEngine:
 
             elif search_type == 'semantic':
                 # Semantic similarity (requires ML)
-                if ML_AVAILABLE and email in self.search_index['semantic_vectors']:
+                if ML_AVAILABLE
+                    email in self.search_index['semantic_vectors']:
                     query_vector = self._get_query_vector(query_keywords)
                     email_vector = self.search_index['semantic_vectors'][email]
                     similarity = cosine_similarity(
@@ -476,7 +488,8 @@ class UltraKeywordSearchEngine:
         candidates = set()
 
         # Start with all indexed emails
-        if not query.keywords and not query.industry and not query.domain_pattern:
+        if not query.keywords
+            not query.industry and not query.domain_pattern:
             candidates = set(self.search_index['emails'].keys())
         else:
             # Filter by keywords
@@ -486,7 +499,8 @@ class UltraKeywordSearchEngine:
                     if keyword in self.search_index['keywords']:
                         keyword_candidates.update(
                             self.search_index['keywords'][keyword])
-                candidates = keyword_candidates if candidates else keyword_candidates
+                candidates = keyword_candidates
+                    candidates else keyword_candidates
 
             # Filter by industry
             if query.industry:
@@ -549,10 +563,12 @@ class UltraKeywordSearchEngine:
             'search_types': {
                 'exact': self.search_analytics.get('search_type_exact', 0),
                 'fuzzy': self.search_analytics.get('search_type_fuzzy', 0),
-                'semantic': self.search_analytics.get('search_type_semantic', 0),
+                'semantic': self.search_analytics.get('search_type_semantic'
+                    0),
                 'all': self.search_analytics.get('search_type_all', 0)
             },
-            'total_results_returned': self.search_analytics['results_returned'],
+            'total_results_returned': self.search_analytics['results_returned']
+                ,
             'average_results_per_search': (
                 self.search_analytics['results_returned'] /
                 max(self.search_analytics['total_searches'], 1)
@@ -565,7 +581,8 @@ class UltraKeywordSearchEngine:
         }
 
     def bulk_index_emails(
-            self, emails: List[str], metadata_list: List[Dict[str, Any]] = None):
+            self
+                emails: List[str], metadata_list: List[Dict[str, Any]] = None):
         """Bulk index multiple emails"""
         try:
             for i, email in enumerate(emails):
