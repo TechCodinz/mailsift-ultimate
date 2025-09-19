@@ -172,25 +172,25 @@ class EmailIntelligence:
 
 class EmailVerificationEngine:
     """Professional email verification with bounce detection."""
-    
+
     def __init__(self):
         self.disposable_domains = self._load_disposable_domains()
         self.spam_traps = self._load_spam_traps()
-        
+
     def _load_disposable_domains(self) -> set:
         """Load list of disposable email domains."""
         return {
             '10minutemail.com', 'tempmail.org', 'guerrillamail.com',
             'mailinator.com', 'throwaway.email', 'temp-mail.org'
         }
-    
+
     def _load_spam_traps(self) -> set:
         """Load known spam trap patterns."""
         return {
             'test@', 'noreply@', 'no-reply@', 'donotreply@',
             'postmaster@', 'abuse@', 'admin@'
         }
-    
+
     def verify_email(self, email: str) -> Dict[str, Any]:
         """Comprehensive email verification."""
         result = {
@@ -205,59 +205,60 @@ class EmailVerificationEngine:
             'risk_level': 'high',
             'suggestions': []
         }
-        
+
         try:
             # Format validation
             if not self._validate_format(email):
                 result['suggestions'].append('Invalid email format')
                 return result
-            
+
             # Extract domain
             domain = email.split('@')[1].lower()
-            
+
             # Check if disposable
             if domain in self.disposable_domains:
                 result['is_disposable'] = True
                 result['risk_level'] = 'high'
                 result['suggestions'].append('Disposable email detected')
-            
+
             # Check spam traps
             if any(trap in email.lower() for trap in self.spam_traps):
                 result['is_spam_trap'] = True
                 result['risk_level'] = 'high'
                 result['suggestions'].append('Potential spam trap')
-            
+
             # MX record check
             if self._check_mx_record(domain):
                 result['mx_record'] = True
                 result['deliverability_score'] += 30
-            
+
             # SMTP validation (simplified)
             if self._smtp_validation(email):
                 result['smtp_check'] = True
                 result['deliverability_score'] += 40
-            
+
             # Calculate final scores
-            result['deliverability_score'] = min(result['deliverability_score'], 100)
+            result['deliverability_score'] = min(
+                result['deliverability_score'], 100)
             result['is_valid'] = result['mx_record'] and not result['is_disposable']
             result['is_deliverable'] = result['smtp_check'] and result['is_valid']
-            
+
             if result['deliverability_score'] >= 70:
                 result['risk_level'] = 'low'
             elif result['deliverability_score'] >= 40:
                 result['risk_level'] = 'medium'
-            
+
         except Exception as e:
             logger.error(f"Email verification error: {e}")
             result['suggestions'].append('Verification failed')
-        
+
         return result
-    
+
     def _validate_format(self, email: str) -> bool:
         """Validate email format."""
         pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         return bool(re.match(pattern, email))
-    
+
     def _check_mx_record(self, domain: str) -> bool:
         """Check MX record for domain."""
         try:
@@ -265,7 +266,7 @@ class EmailVerificationEngine:
             return len(mx_records) > 0
         except Exception:
             return False
-    
+
     def _smtp_validation(self, email: str) -> bool:
         """Basic SMTP validation (simplified)."""
         try:
@@ -273,20 +274,20 @@ class EmailVerificationEngine:
             mx_records = dns.resolver.resolve(domain, 'MX')
             if not mx_records:
                 return False
-            
+
             # Get primary MX record
             mx_record = str(mx_records[0].exchange).rstrip('.')
-            
+
             # Connect to SMTP server
             server = smtplib.SMTP(mx_record, 25, timeout=10)
             server.set_debuglevel(0)
             server.starttls()
-            
+
             # Try to verify email
             server.mail('test@example.com')
             code, message = server.rcpt(email)
             server.quit()
-            
+
             return code == 250
         except Exception:
             return False
@@ -1016,13 +1017,15 @@ def ultra_extract() -> Dict[str, Any]:
 
     # 1. TEXT EXTRACTION - Ultra-advanced
     if data.get("text"):
-        text_result = ultra_extractor.extract_emails_ultra(data["text"], "text")
+        text_result = ultra_extractor.extract_emails_ultra(
+            data["text"], "text")
         all_results.append(text_result)
         total_emails_found += text_result.unique_valid
 
     # 2. HTML EXTRACTION - Advanced HTML parsing
     if data.get("html"):
-        html_result = ultra_extractor.extract_emails_ultra(data["html"], "html")
+        html_result = ultra_extractor.extract_emails_ultra(
+            data["html"], "html")
         all_results.append(html_result)
         total_emails_found += html_result.unique_valid
 
@@ -1030,13 +1033,13 @@ def ultra_extract() -> Dict[str, Any]:
     if data.get("urls"):
         urls = data["urls"][:10]  # Limit to 10 URLs for performance
         url_results = []
-        
+
         with ThreadPoolExecutor(max_workers=5) as executor:
             futures = [
-                executor.submit(_extract_from_url_ultra, url) 
+                executor.submit(_extract_from_url_ultra, url)
                 for url in urls
             ]
-            
+
             for future in futures:
                 try:
                     url_result = future.result(timeout=15)
@@ -1045,14 +1048,14 @@ def ultra_extract() -> Dict[str, Any]:
                         total_emails_found += url_result.unique_valid
                 except Exception as e:
                     logger.error(f"URL extraction error: {e}")
-        
+
         all_results.extend(url_results)
 
     # 4. COMBINE AND DEDUPLICATE
     combined_emails = set()
     for result in all_results:
         combined_emails.update(result.emails)
-    
+
     # 5. ADVANCED INTELLIGENCE ANALYSIS
     intelligence_results = []
     with ThreadPoolExecutor(max_workers=10) as executor:
@@ -1117,14 +1120,14 @@ def _extract_from_url_ultra(url: str):
         }
         response = requests.get(url, timeout=15, headers=headers)
         response.raise_for_status()
-        
+
         # Detect content type
         content_type = response.headers.get('content-type', '').lower()
         if 'html' in content_type:
             return ultra_extractor.extract_emails_ultra(response.text, "html")
         else:
             return ultra_extractor.extract_emails_ultra(response.text, "text")
-            
+
     except Exception as e:
         logger.error(f"URL extraction failed for {url}: {e}")
         return None
@@ -1180,7 +1183,7 @@ def ultra_scrape() -> Dict[str, Any]:
             successful_scrapes += 1
             all_emails.update(result.emails)
             total_emails_found += len(result.emails)
-            
+
             detailed_results.append({
                 "url": result.url,
                 "success": True,
@@ -1223,11 +1226,14 @@ def ultra_scrape() -> Dict[str, Any]:
                 "failed_scrapes": failed_scrapes,
                 "total_emails_found": total_emails_found,
                 "verified_emails": len(verified_emails),
-                "success_rate": round((successful_scrapes / len(urls)) * 100, 2)
-            },
+                "success_rate": round(
+                    (successful_scrapes / len(urls)) * 100,
+                    2)},
             "emails": verified_emails,
             "detailed_results": detailed_results,
-            "processing_time": round(processing_time, 2),
+            "processing_time": round(
+                processing_time,
+                2),
             "credits_used": len(verified_emails),
             "credits_remaining": _get_credits(user_id),
             "scraping_config": {
@@ -1235,10 +1241,7 @@ def ultra_scrape() -> Dict[str, Any]:
                 "timeout": config.timeout,
                 "retry_attempts": config.retry_attempts,
                 "user_agent_rotation": config.user_agents_rotation,
-                "robots_txt_respect": config.respect_robots_txt
-            }
-        }
-    )
+                "robots_txt_respect": config.respect_robots_txt}})
 
 
 @app.route("/api/v5/discover-contacts", methods=["POST"])
@@ -1273,7 +1276,7 @@ def discover_contact_pages() -> Dict[str, Any]:
 
     if contact_pages:
         results = ultra_scraper.scrape_multiple_urls(contact_pages)
-        
+
         for result in results:
             if result.success:
                 all_emails.update(result.emails)
@@ -1375,32 +1378,26 @@ def ultra_keyword_search() -> Dict[str, Any]:
 
     processing_time = time.time() - start_time
 
-    return jsonify(
-        {
-            "success": True,
-            "search_query": {
-                "keywords": keywords,
-                "search_type": search_type,
-                "industry": industry,
-                "domain_pattern": domain_pattern,
-                "email_type": email_type,
-                "confidence_threshold": confidence_threshold,
-                "max_results": max_results
-            },
-            "results": results_data,
-            "summary": {
-                "total_found": len(search_results),
-                "exact_matches": len([r for r in search_results if r.match_type == 'exact']),
-                "fuzzy_matches": len([r for r in search_results if r.match_type == 'fuzzy']),
-                "semantic_matches": len([r for r in search_results if r.match_type == 'semantic']),
-                "contextual_matches": len([r for r in search_results if r.match_type == 'contextual']),
-                "average_confidence": round(sum(r.confidence for r in search_results) / len(search_results), 3) if search_results else 0
-            },
-            "processing_time": round(processing_time, 2),
-            "credits_used": len(search_results),
-            "credits_remaining": _get_credits(user_id)
-        }
-    )
+    return jsonify({"success": True,
+                    "search_query": {"keywords": keywords,
+                                     "search_type": search_type,
+                                     "industry": industry,
+                                     "domain_pattern": domain_pattern,
+                                     "email_type": email_type,
+                                     "confidence_threshold": confidence_threshold,
+                                     "max_results": max_results},
+                    "results": results_data,
+                    "summary": {"total_found": len(search_results),
+                                "exact_matches": len([r for r in search_results if r.match_type == 'exact']),
+                                "fuzzy_matches": len([r for r in search_results if r.match_type == 'fuzzy']),
+                                "semantic_matches": len([r for r in search_results if r.match_type == 'semantic']),
+                                "contextual_matches": len([r for r in search_results if r.match_type == 'contextual']),
+                                "average_confidence": round(sum(r.confidence for r in search_results) / len(search_results),
+                                                            3) if search_results else 0},
+                    "processing_time": round(processing_time,
+                                             2),
+                    "credits_used": len(search_results),
+                    "credits_remaining": _get_credits(user_id)})
 
 
 @app.route("/api/v5/search-suggestions", methods=["GET"])
@@ -1414,7 +1411,8 @@ def get_search_suggestions() -> Dict[str, Any]:
         if not partial_query:
             return jsonify({"error": "Query parameter 'q' required"}), 400
 
-        suggestions = ultra_search_engine.get_search_suggestions(partial_query, limit)
+        suggestions = ultra_search_engine.get_search_suggestions(
+            partial_query, limit)
 
         return jsonify(
             {
@@ -1490,12 +1488,13 @@ def index_emails_for_search() -> Dict[str, Any]:
         {
             "success": True,
             "indexed_emails": len(emails),
-            "processing_time": round(processing_time, 2),
+            "processing_time": round(
+                processing_time,
+                2),
             "credits_used": len(emails),
             "credits_remaining": _get_credits(user_id),
-            "message": f"Successfully indexed {len(emails)} emails for advanced search"
-        }
-    )
+            "message": f"Successfully indexed {
+                len(emails)} emails for advanced search"})
 
 
 @app.route("/api/v5/industry-search", methods=["POST"])
@@ -1535,7 +1534,8 @@ def industry_specific_search() -> Dict[str, Any]:
     search_results = ultra_search_engine.search_emails(query)
 
     # Get industry statistics
-    industry_emails = ultra_search_engine.search_index['industries'].get(industry, [])
+    industry_emails = ultra_search_engine.search_index['industries'].get(
+        industry, [])
     industry_keywords = ultra_search_engine.industry_keywords.get(industry, [])
 
     # Convert results
@@ -1556,23 +1556,19 @@ def industry_specific_search() -> Dict[str, Any]:
 
     processing_time = time.time() - start_time
 
-    return jsonify(
-        {
-            "success": True,
-            "industry": industry,
-            "industry_keywords": industry_keywords,
-            "total_industry_emails": len(industry_emails),
-            "results": results_data,
-            "summary": {
-                "found": len(search_results),
-                "average_confidence": round(sum(r.confidence for r in search_results) / len(search_results), 3) if search_results else 0,
-                "top_keywords": list(set([kw for r in search_results for kw in r.matched_keywords]))[:10]
-            },
-            "processing_time": round(processing_time, 2),
-            "credits_used": len(search_results),
-            "credits_remaining": _get_credits(user_id)
-        }
-    )
+    return jsonify({"success": True,
+                    "industry": industry,
+                    "industry_keywords": industry_keywords,
+                    "total_industry_emails": len(industry_emails),
+                    "results": results_data,
+                    "summary": {"found": len(search_results),
+                                "average_confidence": round(sum(r.confidence for r in search_results) / len(search_results),
+                                                            3) if search_results else 0,
+                                "top_keywords": list(set([kw for r in search_results for kw in r.matched_keywords]))[:10]},
+                    "processing_time": round(processing_time,
+                                             2),
+                    "credits_used": len(search_results),
+                    "credits_remaining": _get_credits(user_id)})
 
 
 @app.route("/api/v5/bulk", methods=["POST"])
@@ -1627,10 +1623,10 @@ def export_emails(format: str) -> Response:
     try:
         data = request.get_json()
         emails = data.get("emails", [])
-        
+
         if not emails:
             return jsonify({"error": "No emails provided"}), 400
-        
+
         if format == "csv":
             return _export_csv(emails)
         elif format == "excel":
@@ -1640,8 +1636,9 @@ def export_emails(format: str) -> Response:
         elif format == "xml":
             return _export_xml(emails)
         else:
-            return jsonify({"error": "Unsupported format. Use: csv, excel, json, xml"}), 400
-            
+            return jsonify(
+                {"error": "Unsupported format. Use: csv, excel, json, xml"}), 400
+
     except Exception as e:
         logger.error(f"Export error: {e}")
         return jsonify({"error": "Export failed"}), 500
@@ -1651,19 +1648,19 @@ def _export_csv(emails: List[str]) -> Response:
     """Export emails as CSV with comprehensive data"""
     output = io.StringIO()
     writer = csv.writer(output)
-    
+
     # Enhanced CSV headers
     headers = [
-        "Email", "Valid", "Deliverable", "Provider", "Domain", 
-        "Risk_Score", "Confidence", "Company", "Industry", 
+        "Email", "Valid", "Deliverable", "Provider", "Domain",
+        "Risk_Score", "Confidence", "Company", "Industry",
         "Social_LinkedIn", "Social_Twitter", "Tags"
     ]
     writer.writerow(headers)
-    
+
     for email in emails:
         intelligence = intelligence_engine.analyze_email(email)
         verification = verification_engine.verify_email(email)
-        
+
         writer.writerow([
             email,
             verification['is_valid'],
@@ -1678,27 +1675,27 @@ def _export_csv(emails: List[str]) -> Response:
             intelligence.social_profiles[1] if len(intelligence.social_profiles) > 1 else '',
             ', '.join(intelligence.tags) if intelligence.tags else ''
         ])
-    
+
     output.seek(0)
     return Response(
         output.getvalue(),
         mimetype="text/csv",
-        headers={"Content-Disposition": "attachment; filename=mailsift_export.csv"}
-    )
+        headers={
+            "Content-Disposition": "attachment; filename=mailsift_export.csv"})
 
 
 def _export_excel(emails: List[str]) -> Response:
     """Export emails as Excel with multiple sheets"""
     try:
         output = io.BytesIO()
-        
+
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
             # Main data sheet
             data = []
             for email in emails:
                 intelligence = intelligence_engine.analyze_email(email)
                 verification = verification_engine.verify_email(email)
-                
+
                 data.append({
                     'Email': email,
                     'Valid': verification['is_valid'],
@@ -1711,10 +1708,10 @@ def _export_excel(emails: List[str]) -> Response:
                     'Industry': intelligence.domain_info.get('industry', '') if intelligence.domain_info else '',
                     'Tags': ', '.join(intelligence.tags) if intelligence.tags else ''
                 })
-            
+
             df = pd.DataFrame(data)
             df.to_excel(writer, sheet_name='Email_Data', index=False)
-            
+
             # Summary sheet
             summary_data = {
                 'Metric': ['Total Emails', 'Valid Emails', 'Deliverable Emails', 'High Risk', 'Low Risk'],
@@ -1728,13 +1725,13 @@ def _export_excel(emails: List[str]) -> Response:
             }
             summary_df = pd.DataFrame(summary_data)
             summary_df.to_excel(writer, sheet_name='Summary', index=False)
-        
+
         output.seek(0)
         return Response(
             output.getvalue(),
             mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            headers={"Content-Disposition": "attachment; filename=mailsift_export.xlsx"}
-        )
+            headers={
+                "Content-Disposition": "attachment; filename=mailsift_export.xlsx"})
     except Exception as e:
         logger.error(f"Excel export error: {e}")
         return jsonify({"error": "Excel export failed"}), 500
@@ -1751,11 +1748,11 @@ def _export_json(emails: List[str]) -> Response:
         },
         "emails": []
     }
-    
+
     for email in emails:
         intelligence = intelligence_engine.analyze_email(email)
         verification = verification_engine.verify_email(email)
-        
+
         email_data = {
             "email": email,
             "verification": verification,
@@ -1770,62 +1767,83 @@ def _export_json(emails: List[str]) -> Response:
             }
         }
         export_data["emails"].append(email_data)
-    
+
     return Response(
-        json.dumps(export_data, indent=2),
+        json.dumps(
+            export_data,
+            indent=2),
         mimetype="application/json",
-        headers={"Content-Disposition": "attachment; filename=mailsift_export.json"}
-    )
+        headers={
+            "Content-Disposition": "attachment; filename=mailsift_export.json"})
 
 
 def _export_xml(emails: List[str]) -> Response:
     """Export emails as XML"""
     root = ET.Element("mailsift_export")
-    
+
     # Add metadata
     metadata = ET.SubElement(root, "metadata")
     ET.SubElement(metadata, "timestamp").text = datetime.now().isoformat()
     ET.SubElement(metadata, "total_emails").text = str(len(emails))
     ET.SubElement(metadata, "format").text = "xml"
     ET.SubElement(metadata, "version").text = "1.0"
-    
+
     # Add emails
     emails_elem = ET.SubElement(root, "emails")
-    
+
     for email in emails:
         email_elem = ET.SubElement(emails_elem, "email")
         ET.SubElement(email_elem, "address").text = email
-        
+
         intelligence = intelligence_engine.analyze_email(email)
         verification = verification_engine.verify_email(email)
-        
+
         # Verification data
         verification_elem = ET.SubElement(email_elem, "verification")
-        ET.SubElement(verification_elem, "is_valid").text = str(verification['is_valid'])
-        ET.SubElement(verification_elem, "is_deliverable").text = str(verification['is_deliverable'])
-        ET.SubElement(verification_elem, "risk_level").text = verification['risk_level']
-        ET.SubElement(verification_elem, "deliverability_score").text = str(verification['deliverability_score'])
-        
+        ET.SubElement(
+            verification_elem,
+            "is_valid").text = str(
+            verification['is_valid'])
+        ET.SubElement(
+            verification_elem,
+            "is_deliverable").text = str(
+            verification['is_deliverable'])
+        ET.SubElement(
+            verification_elem,
+            "risk_level").text = verification['risk_level']
+        ET.SubElement(
+            verification_elem,
+            "deliverability_score").text = str(
+            verification['deliverability_score'])
+
         # Intelligence data
         intelligence_elem = ET.SubElement(email_elem, "intelligence")
-        ET.SubElement(intelligence_elem, "provider").text = intelligence.provider
+        ET.SubElement(
+            intelligence_elem,
+            "provider").text = intelligence.provider
         ET.SubElement(intelligence_elem, "domain").text = intelligence.domain
-        ET.SubElement(intelligence_elem, "risk_score").text = str(intelligence.risk_score)
-        ET.SubElement(intelligence_elem, "confidence").text = str(intelligence.confidence)
-        
+        ET.SubElement(
+            intelligence_elem,
+            "risk_score").text = str(
+            intelligence.risk_score)
+        ET.SubElement(
+            intelligence_elem,
+            "confidence").text = str(
+            intelligence.confidence)
+
         if intelligence.tags:
             tags_elem = ET.SubElement(intelligence_elem, "tags")
             for tag in intelligence.tags:
                 ET.SubElement(tags_elem, "tag").text = tag
-    
+
     # Convert to string
     xml_str = ET.tostring(root, encoding='unicode', method='xml')
-    
+
     return Response(
         xml_str,
         mimetype="application/xml",
-        headers={"Content-Disposition": "attachment; filename=mailsift_export.xml"}
-    )
+        headers={
+            "Content-Disposition": "attachment; filename=mailsift_export.xml"})
 
 
 @app.route("/api/v5/verify", methods=["POST"])
@@ -1837,7 +1855,7 @@ def verify_email() -> Dict[str, Any]:
 
     # Use professional verification engine
     verification_result = verification_engine.verify_email(email)
-    
+
     # Also get AI intelligence
     intelligence = intelligence_engine.analyze_email(email)
 
@@ -1863,15 +1881,15 @@ def bulk_verify_emails() -> Response:
     try:
         data = request.get_json()
         emails = data.get("emails", [])
-        
+
         if not emails or len(emails) > 1000:
             return jsonify({"error": "Max 1000 emails per request"}), 400
-        
+
         results = []
         for email in emails:
             result = verification_engine.verify_email(email.strip())
             results.append(result)
-        
+
         return jsonify({
             "success": True,
             "count": len(results),
@@ -1890,15 +1908,15 @@ def enrich_emails() -> Response:
     try:
         data = request.get_json()
         emails = data.get("emails", [])
-        
+
         if not emails or len(emails) > 100:
             return jsonify({"error": "Max 100 emails per request"}), 400
-        
+
         enriched_results = []
         for email in emails:
             # Enhanced enrichment with AI intelligence
             intelligence = intelligence_engine.analyze_email(email)
-            
+
             enrichment = {
                 "email": email,
                 "domain": email.split('@')[1] if '@' in email else '',
@@ -1916,7 +1934,7 @@ def enrich_emails() -> Response:
                 "tags": intelligence.tags or []
             }
             enriched_results.append(enrichment)
-        
+
         return jsonify({
             "success": True,
             "count": len(enriched_results),
@@ -1937,37 +1955,43 @@ def create_crypto_payment() -> Response:
         amount_usd = float(data.get("amount", 0))
         currency = data.get("currency", "USDT_TRC20")
         user_email = data.get("email", "")
-        
+
         if amount_usd < 5:
             return jsonify({"error": "Minimum amount is $5"}), 400
-        
+
         # Create payment request
         payment = crypto_payment_system.create_payment_request(
             amount_usd=amount_usd,
             currency=currency,
             user_email=user_email
         )
-        
+
         # Get wallet details
         wallets = crypto_payment_system.get_available_wallets()
         wallet_info = next((w for w in wallets if w['key'] == currency), None)
-        
+
         if not wallet_info:
             return jsonify({"error": "Currency not supported"}), 400
-        
-        return jsonify({
-            "success": True,
-            "payment_id": payment.id,
-            "amount_usd": payment.amount_usd,
-            "amount_crypto": round(payment.amount_crypto, 6),
-            "currency": currency,
-            "wallet_address": wallet_info['address'],
-            "wallet_name": wallet_info['name'],
-            "network": wallet_info['network'],
-            "expires_at": payment.expires_at.isoformat(),
-            "instructions": f"Send exactly {round(payment.amount_crypto, 6)} {wallet_info['symbol']} to the address above"
-        })
-        
+
+        return jsonify(
+            {
+                "success": True,
+                "payment_id": payment.id,
+                "amount_usd": payment.amount_usd,
+                "amount_crypto": round(
+                    payment.amount_crypto,
+                    6),
+                "currency": currency,
+                "wallet_address": wallet_info['address'],
+                "wallet_name": wallet_info['name'],
+                "network": wallet_info['network'],
+                "expires_at": payment.expires_at.isoformat(),
+                "instructions": f"Send exactly {
+                    round(
+                        payment.amount_crypto,
+                        6)} {
+                    wallet_info['symbol']} to the address above"})
+
     except Exception as e:
         logger.error(f"Crypto payment creation error: {e}")
         return jsonify({"error": "Failed to create payment"}), 500
@@ -1982,22 +2006,24 @@ def verify_crypto_payment() -> Response:
         payment_id = data.get("payment_id", "")
         txid = data.get("txid", "")
         currency = data.get("currency", "")
-        
+
         if not all([payment_id, txid, currency]):
             return jsonify({"error": "Missing required fields"}), 400
-        
+
         # Get payment details
         payment_status = crypto_payment_system.get_payment_status(payment_id)
         if not payment_status:
             return jsonify({"error": "Payment not found"}), 404
-        
+
         # Verify payment
-        verification_result = crypto_payment_system.verify_payment(txid, currency)
-        
+        verification_result = crypto_payment_system.verify_payment(
+            txid, currency)
+
         if verification_result.get('verified'):
             # Generate license key
-            license_key = crypto_payment_system.generate_license_key(payment_id)
-            
+            license_key = crypto_payment_system.generate_license_key(
+                payment_id)
+
             return jsonify({
                 "success": True,
                 "verified": True,
@@ -2011,7 +2037,7 @@ def verify_crypto_payment() -> Response:
                 "verified": False,
                 "error": verification_result.get('error', 'Payment verification failed')
             })
-            
+
     except Exception as e:
         logger.error(f"Crypto payment verification error: {e}")
         return jsonify({"error": "Verification failed"}), 500
@@ -2054,7 +2080,7 @@ def get_crypto_payment_status(payment_id: str) -> Response:
         status = crypto_payment_system.get_payment_status(payment_id)
         if not status:
             return jsonify({"error": "Payment not found"}), 404
-        
+
         return jsonify({
             "success": True,
             "payment": status
@@ -2132,13 +2158,13 @@ def health() -> Dict[str, Any]:
     """Ultra-advanced health check endpoint"""
     try:
         start_time = time.time()
-        
+
         # Get comprehensive system status
         system_status = ultra_monitoring.get_system_status()
-        
+
         # Check all critical services
         services_status = {}
-        
+
         # Database health
         try:
             conn = sqlite3.connect("mailsift_ultimate.db")
@@ -2147,7 +2173,7 @@ def health() -> Dict[str, Any]:
             services_status["database"] = "healthy"
         except Exception as e:
             services_status["database"] = f"unhealthy: {str(e)}"
-            
+
         # Redis health
         try:
             if redis_client:
@@ -2157,7 +2183,7 @@ def health() -> Dict[str, Any]:
                 services_status["redis"] = "not_configured"
         except Exception as e:
             services_status["redis"] = f"unhealthy: {str(e)}"
-            
+
         # AI Engine health
         try:
             # Test AI engine
@@ -2165,14 +2191,14 @@ def health() -> Dict[str, Any]:
             services_status["ai_engine"] = "healthy"
         except Exception as e:
             services_status["ai_engine"] = f"unhealthy: {str(e)}"
-            
+
         # Crypto Payments health
         try:
             crypto_payment_system.get_available_wallets()
             services_status["crypto_payments"] = "healthy"
         except Exception as e:
             services_status["crypto_payments"] = f"unhealthy: {str(e)}"
-            
+
         # Ultra Extractors health
         try:
             # Test ultra extractor
@@ -2180,7 +2206,7 @@ def health() -> Dict[str, Any]:
             services_status["ultra_extractor"] = "healthy"
         except Exception as e:
             services_status["ultra_extractor"] = f"unhealthy: {str(e)}"
-            
+
         # Ultra Scraper health
         try:
             # Test ultra scraper
@@ -2188,7 +2214,7 @@ def health() -> Dict[str, Any]:
             services_status["ultra_scraper"] = "healthy"
         except Exception as e:
             services_status["ultra_scraper"] = f"unhealthy: {str(e)}"
-            
+
         # Ultra Search health
         try:
             # Test ultra search
@@ -2197,21 +2223,24 @@ def health() -> Dict[str, Any]:
             services_status["ultra_search"] = "healthy"
         except Exception as e:
             services_status["ultra_search"] = f"unhealthy: {str(e)}"
-            
+
         # Determine overall health
-        unhealthy_services = [s for s in services_status.values() if "unhealthy" in s]
+        unhealthy_services = [
+            s for s in services_status.values() if "unhealthy" in s]
         overall_status = "healthy" if not unhealthy_services else "degraded"
-        
+
         if len(unhealthy_services) > 2:
             overall_status = "unhealthy"
-            
+
         response_time = (time.time() - start_time) * 1000
-        
+
         # Record health check metrics
         set_gauge("health_check_duration_ms", response_time)
         set_gauge("unhealthy_services_count", len(unhealthy_services))
-        increment_counter("health_checks_total", labels={"status": overall_status})
-        
+        increment_counter(
+            "health_checks_total", labels={
+                "status": overall_status})
+
         health_response = {
             "status": overall_status,
             "timestamp": datetime.now().isoformat(),
@@ -2228,10 +2257,10 @@ def health() -> Dict[str, Any]:
             "performance_metrics": ultra_performance.get_performance_report(),
             "monitoring_status": system_status
         }
-        
+
         status_code = 200 if overall_status == "healthy" else 503
         return jsonify(health_response), status_code
-        
+
     except Exception as e:
         # Record health check error
         error_context = ErrorContext(
@@ -2239,9 +2268,9 @@ def health() -> Dict[str, Any]:
             timestamp=datetime.now().isoformat()
         )
         error_id = ultra_error_handler.handle_error(e, error_context)
-        
+
         increment_counter("health_checks_total", labels={"status": "error"})
-        
+
         return jsonify({
             "status": "error",
             "timestamp": datetime.now().isoformat(),
@@ -2268,7 +2297,7 @@ def get_monitoring_status() -> Dict[str, Any]:
             timestamp=datetime.now().isoformat()
         )
         error_id = ultra_error_handler.handle_error(e, error_context)
-        
+
         return jsonify({
             "success": False,
             "error_id": error_id,
@@ -2294,7 +2323,7 @@ def get_metrics() -> Dict[str, Any]:
             timestamp=datetime.now().isoformat()
         )
         error_id = ultra_error_handler.handle_error(e, error_context)
-        
+
         return jsonify({
             "success": False,
             "error_id": error_id,
@@ -2308,7 +2337,7 @@ def get_alerts() -> Dict[str, Any]:
     """Get system alerts"""
     try:
         system_status = ultra_monitoring.get_system_status()
-        
+
         return jsonify({
             "success": True,
             "alerts": system_status["alerts"],
@@ -2320,7 +2349,7 @@ def get_alerts() -> Dict[str, Any]:
             timestamp=datetime.now().isoformat()
         )
         error_id = ultra_error_handler.handle_error(e, error_context)
-        
+
         return jsonify({
             "success": False,
             "error_id": error_id,
@@ -2334,7 +2363,7 @@ def resolve_alert(alert_id: str) -> Dict[str, Any]:
     """Resolve a system alert"""
     try:
         ultra_monitoring.resolve_alert(alert_id)
-        
+
         return jsonify({
             "success": True,
             "message": f"Alert {alert_id} resolved",
@@ -2346,7 +2375,7 @@ def resolve_alert(alert_id: str) -> Dict[str, Any]:
             timestamp=datetime.now().isoformat()
         )
         error_id = ultra_error_handler.handle_error(e, error_context)
-        
+
         return jsonify({
             "success": False,
             "error_id": error_id,

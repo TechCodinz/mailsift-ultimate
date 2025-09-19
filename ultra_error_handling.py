@@ -153,15 +153,12 @@ class UltraErrorHandler:
             )
 
             sentry_sdk.init(
-                dsn=os.environ['SENTRY_DSN'],
-                integrations=[
-                    FlaskIntegration(),
-                    sentry_logging
-                ],
-                traces_sample_rate=float(os.environ.get('SENTRY_TRACES', '0.1')),
-                environment=os.environ.get('FLASK_ENV', 'development'),
-                release=os.environ.get('RELEASE_VERSION', 'unknown')
-            )
+                dsn=os.environ['SENTRY_DSN'], integrations=[
+                    FlaskIntegration(), sentry_logging], traces_sample_rate=float(
+                    os.environ.get(
+                        'SENTRY_TRACES', '0.1')), environment=os.environ.get(
+                    'FLASK_ENV', 'development'), release=os.environ.get(
+                        'RELEASE_VERSION', 'unknown'))
 
     def _start_background_processor(self):
         """Start background error processing"""
@@ -205,7 +202,8 @@ class UltraErrorHandler:
 
         # Check cooldown
         now = time.time()
-        if now - self.alert_cooldowns[severity.value] < 300:  # 5 minutes cooldown
+        if now - \
+                self.alert_cooldowns[severity.value] < 300:  # 5 minutes cooldown
             return
 
         # Check threshold
@@ -213,7 +211,10 @@ class UltraErrorHandler:
             self._trigger_severity_alert(severity, error_report)
             self.alert_cooldowns[severity.value] = now
 
-    def _trigger_pattern_alert(self, pattern_hash: str, error_report: ErrorReport):
+    def _trigger_pattern_alert(
+            self,
+            pattern_hash: str,
+            error_report: ErrorReport):
         """Trigger pattern-based alert"""
         alert_data = {
             'type': 'pattern_alert',
@@ -259,11 +260,17 @@ class UltraErrorHandler:
         exception_type = type(exception).__name__
 
         # Critical errors
-        if exception_type in ['SystemExit', 'KeyboardInterrupt', 'MemoryError']:
+        if exception_type in [
+            'SystemExit',
+            'KeyboardInterrupt',
+                'MemoryError']:
             return ErrorSeverity.CRITICAL
 
         # High severity errors
-        if exception_type in ['ConnectionError', 'TimeoutError', 'DatabaseError']:
+        if exception_type in [
+            'ConnectionError',
+            'TimeoutError',
+                'DatabaseError']:
             return ErrorSeverity.HIGH
 
         # Medium severity errors
@@ -323,8 +330,10 @@ class UltraErrorHandler:
             ).hexdigest()[:16]
 
             # Determine severity and category
-            severity = self._determine_severity(exception, context or ErrorContext())
-            category = self._determine_category(exception, context or ErrorContext())
+            severity = self._determine_severity(
+                exception, context or ErrorContext())
+            category = self._determine_category(
+                exception, context or ErrorContext())
 
             # Create error report
             error_report = ErrorReport(
