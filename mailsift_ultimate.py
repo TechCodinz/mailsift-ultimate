@@ -33,6 +33,7 @@ from email_validator import validate_email
 import dns.resolver
 from bs4 import BeautifulSoup
 import smtplib
+from crypto_payments import crypto_payment_system
 # Additional imports for enhanced functionality
 
 # Configure logging
@@ -862,6 +863,12 @@ def pricing() -> str:
     return render_template("pricing_ultra.html", user=user)
 
 
+@app.route("/crypto-payment")
+def crypto_payment() -> str:
+    """Ultra-techy crypto payment portal"""
+    return render_template("crypto_payment_ultra.html")
+
+
 @app.route("/api/v5/extract", methods=["POST"])
 @limiter.limit("100 per minute")
 def extract_ultimate() -> Dict[str, Any]:
@@ -1332,9 +1339,145 @@ def enrich_emails() -> Response:
         return jsonify({"error": "Enrichment failed"}), 500
 
 
+@app.route("/api/v5/crypto/create-payment", methods=["POST"])
+@limiter.limit("10 per minute")
+def create_crypto_payment() -> Response:
+    """Create crypto payment request"""
+    try:
+        data = request.get_json()
+        amount_usd = float(data.get("amount", 0))
+        currency = data.get("currency", "USDT_TRC20")
+        user_email = data.get("email", "")
+        
+        if amount_usd < 5:
+            return jsonify({"error": "Minimum amount is $5"}), 400
+        
+        # Create payment request
+        payment = crypto_payment_system.create_payment_request(
+            amount_usd=amount_usd,
+            currency=currency,
+            user_email=user_email
+        )
+        
+        # Get wallet details
+        wallets = crypto_payment_system.get_available_wallets()
+        wallet_info = next((w for w in wallets if w['key'] == currency), None)
+        
+        if not wallet_info:
+            return jsonify({"error": "Currency not supported"}), 400
+        
+        return jsonify({
+            "success": True,
+            "payment_id": payment.id,
+            "amount_usd": payment.amount_usd,
+            "amount_crypto": round(payment.amount_crypto, 6),
+            "currency": currency,
+            "wallet_address": wallet_info['address'],
+            "wallet_name": wallet_info['name'],
+            "network": wallet_info['network'],
+            "expires_at": payment.expires_at.isoformat(),
+            "instructions": f"Send exactly {round(payment.amount_crypto, 6)} {wallet_info['symbol']} to the address above"
+        })
+        
+    except Exception as e:
+        logger.error(f"Crypto payment creation error: {e}")
+        return jsonify({"error": "Failed to create payment"}), 500
+
+
+@app.route("/api/v5/crypto/verify-payment", methods=["POST"])
+@limiter.limit("20 per minute")
+def verify_crypto_payment() -> Response:
+    """Verify crypto payment with TXID"""
+    try:
+        data = request.get_json()
+        payment_id = data.get("payment_id", "")
+        txid = data.get("txid", "")
+        currency = data.get("currency", "")
+        
+        if not all([payment_id, txid, currency]):
+            return jsonify({"error": "Missing required fields"}), 400
+        
+        # Get payment details
+        payment_status = crypto_payment_system.get_payment_status(payment_id)
+        if not payment_status:
+            return jsonify({"error": "Payment not found"}), 404
+        
+        # Verify payment
+        verification_result = crypto_payment_system.verify_payment(txid, currency)
+        
+        if verification_result.get('verified'):
+            # Generate license key
+            license_key = crypto_payment_system.generate_license_key(payment_id)
+            
+            return jsonify({
+                "success": True,
+                "verified": True,
+                "license_key": license_key,
+                "verification": verification_result,
+                "message": "Payment verified! Your license key has been generated."
+            })
+        else:
+            return jsonify({
+                "success": False,
+                "verified": False,
+                "error": verification_result.get('error', 'Payment verification failed')
+            })
+            
+    except Exception as e:
+        logger.error(f"Crypto payment verification error: {e}")
+        return jsonify({"error": "Verification failed"}), 500
+
+
+@app.route("/api/v5/crypto/wallets", methods=["GET"])
+def get_crypto_wallets() -> Response:
+    """Get available crypto wallets"""
+    try:
+        wallets = crypto_payment_system.get_available_wallets()
+        return jsonify({
+            "success": True,
+            "wallets": wallets,
+            "total_currencies": len(wallets)
+        })
+    except Exception as e:
+        logger.error(f"Get wallets error: {e}")
+        return jsonify({"error": "Failed to get wallets"}), 500
+
+
+@app.route("/api/v5/crypto/rates", methods=["GET"])
+def get_crypto_rates() -> Response:
+    """Get current crypto rates"""
+    try:
+        rates = crypto_payment_system.get_crypto_rates()
+        return jsonify({
+            "success": True,
+            "rates": rates,
+            "timestamp": datetime.now().isoformat()
+        })
+    except Exception as e:
+        logger.error(f"Get rates error: {e}")
+        return jsonify({"error": "Failed to get rates"}), 500
+
+
+@app.route("/api/v5/crypto/payment-status/<payment_id>", methods=["GET"])
+def get_crypto_payment_status(payment_id: str) -> Response:
+    """Get crypto payment status"""
+    try:
+        status = crypto_payment_system.get_payment_status(payment_id)
+        if not status:
+            return jsonify({"error": "Payment not found"}), 404
+        
+        return jsonify({
+            "success": True,
+            "payment": status
+        })
+    except Exception as e:
+        logger.error(f"Get payment status error: {e}")
+        return jsonify({"error": "Failed to get payment status"}), 500
+
+
 @app.route("/api/v5/subscribe", methods=["POST"])
 def subscribe() -> Dict[str, Any]:
-    """Subscription with Stripe"""
+    """Subscription with Stripe + Crypto options"""
     data = request.get_json()
     plan = data.get("plan", "starter")
     email = data.get("email", "")
