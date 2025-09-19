@@ -25,9 +25,12 @@ def run_command(command, description):
 def create_desktop_app():
     """Create the desktop application executable"""
     
-    # Install PyInstaller if not already installed
-    if not run_command("pip install pyinstaller", "Installing PyInstaller"):
-        return False
+    # Check if PyInstaller is available
+    try:
+        subprocess.run(["python", "-m", "PyInstaller", "--version"], check=True, capture_output=True)
+    except subprocess.CalledProcessError:
+        if not run_command("pip install pyinstaller", "Installing PyInstaller"):
+            return False
     
     # Create build directory
     build_dir = Path("build")
@@ -40,18 +43,25 @@ def create_desktop_app():
     
     # PyInstaller command for desktop app
     pyinstaller_cmd = [
-        "pyinstaller",
+        "python", "-m", "PyInstaller",
         "--onefile",  # Create single executable
         "--windowed",  # No console window (GUI only)
         "--name=MailSift_Ultra",
-        "--icon=mail_icon.ico",  # App icon
-        "--add-data=templates;templates",  # Include templates
         "--hidden-import=tkinter",
         "--hidden-import=PIL",
         "--hidden-import=requests",
         "--hidden-import=sqlite3",
         "desktop_app.py"
     ]
+    
+    # Add icon if it exists and is valid
+    if Path("mail_icon.ico").exists():
+        try:
+            from PIL import Image
+            with Image.open("mail_icon.ico") as img:
+                pyinstaller_cmd.append("--icon=mail_icon.ico")
+        except:
+            print("⚠️  Icon file exists but is invalid, skipping icon")
     
     # Convert to string for subprocess
     cmd_str = " ".join(pyinstaller_cmd)
@@ -315,19 +325,28 @@ exec "${HERE}"/usr/bin/mailsift-ultra "$@"
 
 def create_icon():
     """Create application icon"""
-    # This is a placeholder - in production, you'd use a proper icon
-    icon_content = """# Placeholder for mail icon
-# In production, replace this with actual icon files:
-# - mail_icon.ico (Windows)
-# - mail_icon.icns (macOS)
-# - mail_icon.png (Linux)
-"""
-    
-    with open("mail_icon.ico", "w") as f:
-        f.write(icon_content)
-    
-    print("📝 Created placeholder icon file")
-    print("   Replace with actual icon files for production")
+    try:
+        from PIL import Image, ImageDraw
+        
+        # Create a simple icon
+        img = Image.new('RGBA', (64, 64), (0, 255, 255, 255))
+        draw = ImageDraw.Draw(img)
+        
+        # Draw a simple mail icon
+        draw.rectangle([16, 16, 48, 48], outline=(0, 0, 0, 255), width=2)
+        draw.polygon([(16, 16), (32, 28), (48, 16)], fill=(0, 255, 255, 255))
+        
+        # Save as ICO
+        img.save("mail_icon.ico", format="ICO", sizes=[(64, 64), (32, 32), (16, 16)])
+        print("✅ Created proper icon file")
+        
+    except ImportError:
+        print("📝 PIL not available, creating placeholder icon")
+        # Create a minimal ICO file header
+        ico_data = b'\x00\x00\x01\x00\x01\x00\x10\x10\x00\x00\x01\x00\x20\x00\x68\x04\x00\x00\x16\x00\x00\x00'
+        with open("mail_icon.ico", "wb") as f:
+            f.write(ico_data)
+        print("   Install Pillow for better icon support: pip install Pillow")
 
 def main():
     """Main build process"""
