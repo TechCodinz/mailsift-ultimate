@@ -174,7 +174,8 @@ class UltraCryptoPaymentSystem:
             response = requests.get(
                 'https://api.coingecko.com/api/v3/simple/price',
                 params={
-                    'ids': 'bitcoin,ethereum,tether,binancecoin,matic-network,solana,cardano,polkadot,avalanche-2',
+                    'ids': ('bitcoin,ethereum,tether,binancecoin,matic-network,'
+                            'solana,cardano,polkadot,avalanche-2'),
                     'vs_currencies': 'usd'},
                 timeout=10)
 
@@ -296,7 +297,7 @@ class UltraCryptoPaymentSystem:
                 # Etherscan API verification
                 api_key = self.api_keys.get('etherscan')
                 response = requests.get(
-                    f'https://api.etherscan.io/api',
+                    'https://api.etherscan.io/api',
                     params={
                         'module': 'proxy',
                         'action': 'eth_getTransactionByHash',
@@ -352,7 +353,7 @@ class UltraCryptoPaymentSystem:
         try:
             api_key = self.api_keys.get('etherscan')
             response = requests.get(
-                f'https://api.etherscan.io/api',
+                'https://api.etherscan.io/api',
                 params={
                     'module': 'proxy',
                     'action': 'eth_getTransactionByHash',
@@ -396,7 +397,8 @@ class UltraCryptoPaymentSystem:
         """Verify Solana payment"""
         return self._verify_generic_payment(txid, 'SOL')
 
-    def _verify_generic_payment(self, txid: str, currency: str) -> Dict[str, Any]:
+    def _verify_generic_payment(self, txid: str, 
+                                currency: str) -> Dict[str, Any]:
         """Generic payment verification"""
         # For now, return basic verification
         return {
