@@ -1,0 +1,15 @@
+[flake8]
+max-line-length = 88
+extend-ignore = E501
+exclude = 
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    env,
+    .env,
+    migrations/versions,
+    tests/__pycache__
+per-file-ignores =
+    mailsift_ultimate.py:E501
+    ultra_keyword_search.py:E501

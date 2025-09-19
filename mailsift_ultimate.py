@@ -1097,7 +1097,8 @@ def ultra_extract() -> Dict[str, Any]:
                 "extraction_methods": {
                     "text": sum(1 for r in all_results if not r.context_info.get('has_html')),
                     "html": sum(1 for r in all_results if r.context_info.get('has_html')),
-                    "obfuscated": sum(1 for r in all_results if r.context_info.get('has_obfuscation')),
+                    "obfuscated": sum(1 for r in all_results
+                                      if r.context_info.get('has_obfuscation')),
                     "encoded": sum(1 for r in all_results if r.context_info.get('has_encoding'))
                 },
                 "confidence_scores": {
@@ -1400,8 +1401,10 @@ def ultra_keyword_search() -> Dict[str, Any]:
                                                         if r.match_type == 'semantic']),
                                 "contextual_matches": len([r for r in search_results
                                                           if r.match_type == 'contextual']),
-                                "average_confidence": round(sum(r.confidence for r in search_results) / len(search_results),
-                                                            3) if search_results else 0},
+                                "average_confidence": (
+                                    round(sum(r.confidence for r in search_results) /
+                                          len(search_results), 3)
+                                    if search_results else 0)},
                     "processing_time": round(processing_time,
                                              2),
                     "credits_used": len(search_results),
@@ -1726,13 +1729,17 @@ def _export_excel(emails: List[str]) -> Response:
 
             # Summary sheet
             summary_data = {
-                'Metric': ['Total Emails', 'Valid Emails', 'Deliverable Emails', 'High Risk', 'Low Risk'],
+                'Metric': ['Total Emails', 'Valid Emails', 'Deliverable Emails',
+                           'High Risk', 'Low Risk'],
                 'Count': [
                     len(emails),
                     sum(1 for email in emails if verification_engine.verify_email(email)['is_valid']),
-                    sum(1 for email in emails if verification_engine.verify_email(email)['is_deliverable']),
-                    sum(1 for email in emails if intelligence_engine.analyze_email(email).risk_score > 70),
-                    sum(1 for email in emails if intelligence_engine.analyze_email(email).risk_score < 30)
+                    sum(1 for email in emails
+                        if verification_engine.verify_email(email)['is_deliverable']),
+                    sum(1 for email in emails
+                        if intelligence_engine.analyze_email(email).risk_score > 70),
+                    sum(1 for email in emails
+                        if intelligence_engine.analyze_email(email).risk_score < 30)
                 ]
             }
             summary_df = pd.DataFrame(summary_data)
