@@ -8,7 +8,10 @@ import traceback
 import json
 import time
 import hashlib
-from typing import Dict, Any, Optional, Callable
+from typing import Dict, Any, Optional, Callable, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from flask import Flask
 from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta
 from enum import Enum
@@ -92,7 +95,7 @@ class ErrorReport:
 class UltraErrorHandler:
     """The most advanced error handling system ever built"""
 
-    def __init__(self, app=None):
+    def __init__(self, app: Optional['Flask'] = None) -> None:
         self.app = app
         self.error_reports = {}
         self.error_stats = defaultdict(int)
@@ -110,7 +113,7 @@ class UltraErrorHandler:
         self._setup_sentry()
         self._start_background_processor()
 
-    def _setup_logging(self):
+    def _setup_logging(self) -> None:
         """Setup advanced logging configuration"""
         # Configure structured logging if available
         if STRUCTLOG_AVAILABLE:
@@ -144,7 +147,7 @@ class UltraErrorHandler:
 
         self.logger = logging.getLogger('ultra_error_handler')
 
-    def _setup_sentry(self):
+    def _setup_sentry(self) -> None:
         """Setup Sentry for error tracking"""
         if SENTRY_AVAILABLE and os.environ.get('SENTRY_DSN'):
             sentry_logging = LoggingIntegration(
@@ -161,7 +164,7 @@ class UltraErrorHandler:
                     'FLASK_ENV', 'development'), release=os.environ.get(
                         'RELEASE_VERSION', 'unknown'))
 
-    def _start_background_processor(self):
+    def _start_background_processor(self) -> None:
         """Start background error processing"""
         self.background_processor = threading.Thread(
             target=self._process_error_queue,
@@ -169,7 +172,7 @@ class UltraErrorHandler:
         )
         self.background_processor.start()
 
-    def _process_error_queue(self):
+    def _process_error_queue(self) -> None:
         """Process error queue in background"""
         while True:
             try:
@@ -183,7 +186,7 @@ class UltraErrorHandler:
             except Exception as e:
                 self.logger.error(f"Error processing error queue: {e}")
 
-    def _analyze_error_pattern(self, error_report: ErrorReport):
+    def _analyze_error_pattern(self, error_report: ErrorReport) -> None:
         """Analyze error patterns for insights"""
         # Create pattern hash
         pattern_hash = hashlib.md5(
@@ -197,7 +200,7 @@ class UltraErrorHandler:
         if self.error_patterns[pattern_hash] > 10:
             self._trigger_pattern_alert(pattern_hash, error_report)
 
-    def _check_alert_thresholds(self, error_report: ErrorReport):
+    def _check_alert_thresholds(self, error_report: ErrorReport) -> None:
         """Check if error thresholds are exceeded"""
         severity = error_report.severity
         threshold = self.alert_thresholds.get(severity, 100)
@@ -216,7 +219,7 @@ class UltraErrorHandler:
     def _trigger_pattern_alert(
             self,
             pattern_hash: str,
-            error_report: ErrorReport):
+            error_report: ErrorReport) -> None:
         """Trigger pattern-based alert"""
         alert_data = {
             'type': 'pattern_alert',
@@ -231,7 +234,7 @@ class UltraErrorHandler:
     def _trigger_severity_alert(
             self,
             severity: ErrorSeverity,
-            error_report: ErrorReport):
+            error_report: ErrorReport) -> None:
         """Trigger severity-based alert"""
         alert_data = {
             'type': 'severity_alert',
@@ -243,7 +246,7 @@ class UltraErrorHandler:
 
         self.logger.critical(f"SEVERITY ALERT: {json.dumps(alert_data)}")
 
-    def _store_error_report(self, error_report: ErrorReport):
+    def _store_error_report(self, error_report: ErrorReport) -> None:
         """Store error report"""
         self.error_reports[error_report.error_id] = error_report
         self.error_stats[error_report.severity.value] += 1
@@ -392,11 +395,11 @@ class UltraErrorHandler:
 
     def error_handler(self, severity: ErrorSeverity = ErrorSeverity.MEDIUM,
                       category: ErrorCategory = ErrorCategory.UNKNOWN,
-                      metadata: Dict[str, Any] = None):
+                      metadata: Dict[str, Any] = None) -> Callable:
         """Decorator for automatic error handling"""
         def decorator(func: Callable) -> Callable:
             @functools.wraps(func)
-            def wrapper(*args, **kwargs):
+            def wrapper(*args: Any, **kwargs: Any) -> Any:
                 try:
                     return func(*args, **kwargs)
                 except Exception as e:
@@ -443,13 +446,13 @@ class UltraErrorHandler:
         """Get specific error report by ID"""
         return self.error_reports.get(error_id)
 
-    def resolve_error(self, error_id: str, resolution_notes: str = None):
+    def resolve_error(self, error_id: str, resolution_notes: str = None) -> None:
         """Mark error as resolved"""
         if error_id in self.error_reports:
             self.error_reports[error_id].resolved = True
             self.error_reports[error_id].resolution_notes = resolution_notes
 
-    def cleanup_old_errors(self, days: int = 7):
+    def cleanup_old_errors(self, days: int = 7) -> None:
         """Cleanup errors older than specified days"""
         cutoff_date = datetime.now() - timedelta(days=days)
         cutoff_str = cutoff_date.isoformat()
@@ -473,7 +476,7 @@ ultra_error_handler = UltraErrorHandler()
 
 def handle_errors(severity: ErrorSeverity = ErrorSeverity.MEDIUM,
                   category: ErrorCategory = ErrorCategory.UNKNOWN,
-                  metadata: Dict[str, Any] = None):
+                  metadata: Dict[str, Any] = None) -> Callable:
     """Convenience decorator for error handling"""
     return ultra_error_handler.error_handler(severity, category, metadata)
 
