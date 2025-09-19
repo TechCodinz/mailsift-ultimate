@@ -41,7 +41,7 @@ from ultra_keyword_search import ultra_search_engine, SearchQuery
 from ultra_error_handling import ultra_error_handler, ErrorContext
 from ultra_monitoring import ultra_monitoring, set_gauge, increment_counter
 from ultra_performance import (ultra_performance, monitor_performance,
-                                PerformanceLevel)
+                               PerformanceLevel)
 # Additional imports for enhanced functionality
 
 # Configure logging
@@ -1567,7 +1567,7 @@ def industry_specific_search() -> Dict[str, Any]:
                     "summary": {"found": len(search_results),
                                 "average_confidence": round(sum(r.confidence for r in search_results) / len(search_results),
                                                             3) if search_results else 0,
-                                "top_keywords": list(set([kw for r in search_results for kw in r.matched_keywords]))[:10]},
+                                "top_keywords": list({kw for r in search_results for kw in r.matched_keywords})[:10]},
                     "processing_time": round(processing_time,
                                              2),
                     "credits_used": len(search_results),
