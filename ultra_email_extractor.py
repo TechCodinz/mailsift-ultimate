@@ -130,8 +130,8 @@ class UltraEmailExtractor:
             # Comments and hidden text
             'comments': re.compile(
                 r'<!--.*?([a-zA-Z0-9](?:[a-zA-Z0-9._-]*[a-zA-Z0-9])?@'
-                (r'[a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,})'
-                 r'.*?-->'),
+                r'[a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,})'
+                r'.*?-->',
                 re.IGNORECASE | re.DOTALL
             )
         }

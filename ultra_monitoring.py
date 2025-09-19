@@ -14,8 +14,8 @@ from datetime import datetime, timedelta
 from enum import Enum
 import logging
 import smtplib
-from email.mime.text import MimeText
-from email.mime.multipart import MimeMultipart
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 import os
 from collections import defaultdict, deque
 import queue
@@ -507,7 +507,7 @@ class UltraMonitoringSystem:
             if not all([smtp_username, smtp_password, alert_email]):
                 return
                 
-            msg = MimeMultipart()
+            msg = MIMEMultipart()
             msg['From'] = smtp_username
             msg['To'] = alert_email
             msg['Subject'] = f"[{alert.level.value.upper()}] {alert.title}"
@@ -522,7 +522,7 @@ class UltraMonitoringSystem:
             Timestamp: {alert.timestamp}
             """
             
-            msg.attach(MimeText(body, 'plain'))
+            msg.attach(MIMEText(body, 'plain'))
             
             server = smtplib.SMTP(smtp_server, smtp_port)
             server.starttls()
